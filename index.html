@@ -163,14 +163,6 @@ header.topbar {
 }
 .brand-sub { color: var(--ink-mute); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
 
-.view-switch { display: flex; gap: 2px; background: var(--bg); padding: 3px; border-radius: var(--r); border: 1px solid var(--line); }
-.view-switch button {
-  background: transparent; border: none; color: var(--ink-dim);
-  padding: 5px 12px; font-family: inherit; font-size: 13px;
-  border-radius: var(--r-sm); cursor: pointer;
-}
-.view-switch button.active { background: var(--panel-2); color: var(--ink); }
-
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 .user-chip {
   font-family: 'JetBrains Mono', monospace;
@@ -222,106 +214,13 @@ main {
   padding: 16px 20px;
 }
 
-/* ============================================================ GANTT */
-.gantt-wrap {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  overflow: hidden;
-}
-.gantt {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-}
-.gantt-side {
-  border-right: 1px solid var(--line);
-  background: var(--panel-2);
-}
-.gantt-side-header, .gantt-time-header {
-  height: 48px;
-  border-bottom: 1px solid var(--line);
-  display: flex; align-items: center;
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--ink-mute);
-  padding: 0 14px;
-}
-.gantt-row, .gantt-time-row {
-  height: 44px;
-  border-bottom: 1px solid var(--line);
-  display: flex; align-items: center;
-}
-.gantt-row { padding: 0 14px; gap: 10px; cursor: pointer; }
-.gantt-row:hover { background: rgba(255,255,255,0.02); }
-.gantt-row .nombre { font-weight: 500; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gantt-row .cuadrilla { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-mute); }
-
-.gantt-time {
-  position: relative;
-  overflow-x: auto;
-}
-.gantt-time-header {
-  display: grid;
-  position: sticky; top: 0;
-  background: var(--panel-2);
-  z-index: 2;
-  padding: 0;
-}
-.gantt-time-header .month {
-  border-right: 1px solid var(--line);
-  padding: 0 10px;
-  display: flex; align-items: center;
-  font-size: 11px;
-}
-.gantt-time-row {
-  position: relative;
-  border-bottom: 1px solid var(--line);
-}
-.gantt-time-row .day-grid {
-  position: absolute; inset: 0;
-  display: flex;
-}
-.gantt-time-row .day {
-  flex: 1; border-right: 1px solid rgba(255,255,255,0.025);
-}
-.gantt-time-row .day.weekend { background: rgba(255,255,255,0.015); }
-.gantt-bar {
-  position: absolute;
-  top: 11px;
-  height: 22px;
-  border-radius: var(--r);
-  display: flex; align-items: center;
-  padding: 0 8px;
-  font-size: 11px;
-  font-family: 'JetBrains Mono', monospace;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border: 1px solid rgba(0,0,0,0.3);
-}
-.gantt-bar.estado-pendiente    { background: var(--st-pendiente); }
-.gantt-bar.estado-tramite      { background: var(--st-tramite); color: #0b1220; }
-.gantt-bar.estado-instalacion  { background: var(--st-instalacion); color: #2b1500; }
-.gantt-bar.estado-terminado    { background: var(--st-terminado); color: #04240f; }
-.gantt-today {
-  position: absolute; top: 0; bottom: 0;
-  width: 1px; background: var(--accent);
-  z-index: 1;
-}
-.gantt-today::before {
-  content: 'HOY';
-  position: absolute; top: -16px; left: -14px;
-  font-size: 9px; color: var(--accent);
-  font-family: 'JetBrains Mono', monospace;
-  letter-spacing: 0.1em;
-}
-
 /* ============================================================ TABLE */
 .tabla-wrap {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  overflow: hidden;
+  overflow: auto;
+  max-height: calc(100vh - 180px);
 }
 table.tabla {
   width: 100%;
@@ -338,7 +237,13 @@ table.tabla {
   border-bottom: 1px solid var(--line);
   background: var(--panel-2);
   position: sticky; top: 0;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
 }
+.tabla th:hover { color: var(--ink); }
+.tabla th.sort-asc::after  { content: ' ↑'; color: var(--accent); }
+.tabla th.sort-desc::after { content: ' ↓'; color: var(--accent); }
 .tabla td {
   padding: 11px 14px;
   border-bottom: 1px solid var(--line);
@@ -347,7 +252,8 @@ table.tabla {
 .tabla tr { cursor: pointer; }
 .tabla tr:hover td { background: rgba(255,255,255,0.02); }
 .tabla tr.bloqueado td { color: var(--ink-mute); }
-.tabla tr.bloqueado td::after {}
+
+.tabla td.cell-warn { color: var(--warn); font-style: italic; }
 
 .estado-pill {
   display: inline-block;
@@ -410,6 +316,14 @@ table.tabla {
 .drawer-close:hover { color: var(--ink); }
 
 .drawer-body { flex: 1; overflow-y: auto; padding: 18px 20px; }
+.drawer-footer {
+  border-top: 1px solid var(--line);
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  background: var(--panel);
+}
 
 .section {
   margin-bottom: 26px;
@@ -486,7 +400,6 @@ table.tabla {
 
 /* Mobile */
 @media (max-width: 768px) {
-  .gantt { grid-template-columns: 160px 1fr; }
   .drawer { width: 100%; }
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .filters { padding: 10px; gap: 6px; }
@@ -534,11 +447,6 @@ table.tabla {
       </div>
     </div>
 
-    <div class="view-switch" id="view-switch">
-      <button data-view="gantt" class="active">Gantt</button>
-      <button data-view="tabla">Tabla</button>
-    </div>
-
     <div class="topbar-right">
       <div class="user-chip" id="user-chip">—</div>
       <button class="btn btn-ghost btn-sm" id="logout">Salir</button>
@@ -568,34 +476,24 @@ table.tabla {
   </div>
 
   <main>
-    <!-- Vista Gantt -->
-    <section id="view-gantt">
-      <div class="gantt-wrap" id="gantt-wrap">
-        <div class="empty"><h3>Cargando…</h3></div>
-      </div>
-    </section>
-
-    <!-- Vista Tabla -->
-    <section id="view-tabla" class="hidden">
-      <div class="tabla-wrap">
-        <table class="tabla">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Cliente</th>
-              <th>Estado</th>
-              <th>Cuadrilla</th>
-              <th>kW</th>
-              <th>Programada</th>
-              <th>Terminación</th>
-              <th>SIRESI</th>
-              <th>Asesor</th>
-            </tr>
-          </thead>
-          <tbody id="tabla-body"></tbody>
-        </table>
-      </div>
-    </section>
+    <div class="tabla-wrap">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th data-sort="cotizacion_num">#</th>
+            <th data-sort="cliente_nombre">Cliente</th>
+            <th data-sort="estado">Estado</th>
+            <th data-sort="cuadrilla">Cuadrilla</th>
+            <th data-sort="kw_sistema">kW</th>
+            <th data-sort="fecha_programada_instalacion">Programada</th>
+            <th data-sort="fecha_terminacion">Terminación</th>
+            <th data-sort="siresi">SIRESI</th>
+            <th data-sort="asesor_original">Asesor</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body"></tbody>
+      </table>
+    </div>
   </main>
 
 </div>
@@ -608,6 +506,7 @@ table.tabla {
     <button class="drawer-close" id="d-close">×</button>
   </div>
   <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-footer" id="drawer-footer"></div>
 </aside>
 
 <div class="toast" id="toast"></div>
@@ -617,7 +516,7 @@ table.tabla {
    CONFIG
    ============================================================ */
 const SUPABASE_URL  = 'https://lernzlbzrgatqkadwhas.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxlcm56bGJ6cmdhdHFrYWR3aGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxODgwMzgsImV4cCI6MjA5Mzc2NDAzOH0.G4AWdtTdxew0_EHGeHx28ijwHJOuyuXyVG0KbR-J8k4';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxlcm56bGJ6cmdhdHFrYWR3aGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxODgwMzgsImV4cCI6MjA5Mzc2NDAzOH0.G4AWdtTdxew0_EHGeHx28ijwHJOuyuXyVG0KbR-J8k4'; // ← Reemplazar con la misma anon key del CRM viejo
 
 // Usuarios V1 — definir contraseñas reales antes de desplegar
 const USERS = {
@@ -638,8 +537,8 @@ const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
    ============================================================ */
 let currentUser = null;
 let proyectos   = [];
-let currentView = 'gantt';
 let currentDrawerId = null;
+let sortState   = { field: 'cotizacion_num', dir: 'desc' };
 
 /* ============================================================
    LOGIN
@@ -684,26 +583,41 @@ function startApp() {
    UI BINDINGS
    ============================================================ */
 function bindUI() {
-  // View switch
-  document.querySelectorAll('#view-switch button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#view-switch button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentView = btn.dataset.view;
-      $('#view-gantt').classList.toggle('hidden', currentView !== 'gantt');
-      $('#view-tabla').classList.toggle('hidden', currentView !== 'tabla');
-      render();
-    });
-  });
-
   // Filtros
   ['f-estado', 'f-cuadrilla', 'f-busqueda'].forEach(id => {
     $('#' + id).addEventListener('input', render);
   });
 
+  // Sort de la tabla
+  document.querySelectorAll('.tabla th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const campo = th.dataset.sort;
+      if (sortState.field === campo) {
+        sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortState.field = campo;
+        sortState.dir = 'asc';
+      }
+      render();
+    });
+  });
+
   // Drawer
   $('#d-close').addEventListener('click', closeDrawer);
   $('#drawer-backdrop').addEventListener('click', closeDrawer);
+
+  // Atajo de teclado: Ctrl/Cmd + S para guardar mientras el drawer está abierto
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      if (currentDrawerId && document.getElementById('d-save')) {
+        e.preventDefault();
+        guardarDrawer();
+      }
+    }
+    if (e.key === 'Escape' && currentDrawerId) {
+      closeDrawer();
+    }
+  });
 }
 
 /* ============================================================
@@ -746,8 +660,13 @@ async function addComentario(tabla, proyectoId, comentario) {
 }
 
 async function actualizarProyecto(id, cambios) {
-  const { error } = await supa.from('proyectos').update(cambios).eq('id', id);
-  if (error) { toast('Error: ' + error.message, 'err'); return false; }
+  const { data, error } = await supa.from('proyectos').update(cambios).eq('id', id).select();
+  if (error) {
+    console.error('Error actualizando proyecto:', error);
+    toast('Error: ' + error.message, 'err');
+    return false;
+  }
+  console.log('Proyecto actualizado:', data);
   return true;
 }
 
@@ -775,9 +694,32 @@ function aplicarFiltros(lista) {
    ============================================================ */
 function render() {
   const filtrados = aplicarFiltros(proyectos);
+  ordenar(filtrados);
   renderCounters(filtrados);
-  if (currentView === 'gantt') renderGantt(filtrados);
-  else renderTabla(filtrados);
+  renderTabla(filtrados);
+  actualizarHeadersSort();
+}
+
+function ordenar(lista) {
+  const { field, dir } = sortState;
+  const mult = dir === 'asc' ? 1 : -1;
+  lista.sort((a, b) => {
+    let va = a[field], vb = b[field];
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1;   // nulls al final siempre
+    if (vb == null) return -1;
+    if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * mult;
+    return String(va).localeCompare(String(vb), 'es') * mult;
+  });
+}
+
+function actualizarHeadersSort() {
+  document.querySelectorAll('.tabla th[data-sort]').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.sort === sortState.field) {
+      th.classList.add(sortState.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+    }
+  });
 }
 
 function renderCounters(filtrados) {
@@ -797,7 +739,6 @@ function renderCounters(filtrados) {
   }).join('');
 }
 
-/* ---------- TABLA ---------- */
 function renderTabla(lista) {
   const body = $('#tabla-body');
   if (lista.length === 0) {
@@ -806,14 +747,20 @@ function renderTabla(lista) {
   }
   body.innerHTML = lista.map(p => {
     const estClass = estadoClass(p.estado);
-    const cuadrilla = p.cuadrilla === 'Otro' ? (p.cuadrilla_otro || 'Otro') : (p.cuadrilla || '—');
+    const cuadrilla = p.cuadrilla === 'Otro' ? (p.cuadrilla_otro || 'Otro') : p.cuadrilla;
+    const cuadrillaCell = cuadrilla
+      ? `<td class="mono" style="font-size:12px">${escapeHtml(cuadrilla)}</td>`
+      : `<td class="cell-warn mono" style="font-size:12px">Sin asignar</td>`;
+    const fechaCell = p.fecha_programada_instalacion
+      ? `<td class="mono">${fmtFecha(p.fecha_programada_instalacion)}</td>`
+      : `<td class="cell-warn mono">Sin fecha</td>`;
     return `<tr class="${p.bloqueado ? 'bloqueado' : ''}" data-id="${p.id}">
       <td class="mono" style="color:var(--ink-mute)">${p.cotizacion_num ? '#' + p.cotizacion_num : '—'}</td>
       <td>${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}</td>
       <td><span class="estado-pill ${estClass}">${p.estado}</span></td>
-      <td class="mono" style="font-size:12px">${escapeHtml(cuadrilla)}</td>
+      ${cuadrillaCell}
       <td class="mono">${p.kw_sistema ? p.kw_sistema + ' kW' : '—'}</td>
-      <td class="mono">${fmtFecha(p.fecha_programada_instalacion)}</td>
+      ${fechaCell}
       <td class="mono">${fmtFecha(p.fecha_terminacion)}</td>
       <td class="mono">${escapeHtml(p.siresi || '—')}</td>
       <td>${escapeHtml(p.asesor_original || '—')}</td>
@@ -822,125 +769,6 @@ function renderTabla(lista) {
   body.querySelectorAll('tr[data-id]').forEach(tr => {
     tr.addEventListener('click', () => openDrawer(parseInt(tr.dataset.id)));
   });
-}
-
-/* ---------- GANTT ---------- */
-function renderGantt(lista) {
-  const wrap = $('#gantt-wrap');
-  if (lista.length === 0) {
-    wrap.innerHTML = `<div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div>`;
-    return;
-  }
-
-  // Calcular rango de fechas
-  const hoy = new Date(); hoy.setHours(0,0,0,0);
-  let minFecha = new Date(hoy); minFecha.setDate(minFecha.getDate() - 14);
-  let maxFecha = new Date(hoy); maxFecha.setDate(maxFecha.getDate() + 60);
-
-  lista.forEach(p => {
-    [p.fecha_venta, p.fecha_programada_instalacion, p.fecha_inicio_instalacion, p.fecha_terminacion]
-      .filter(Boolean).forEach(f => {
-        const d = parseFecha(f);
-        if (d < minFecha) minFecha = d;
-        if (d > maxFecha) maxFecha = d;
-      });
-  });
-
-  const totalDias = Math.max(1, Math.ceil((maxFecha - minFecha) / 86400000));
-  const dayWidth = 18; // px por día
-  const timeWidth = totalDias * dayWidth;
-
-  // Generar meses para el header
-  const meses = [];
-  let cursor = new Date(minFecha);
-  while (cursor <= maxFecha) {
-    const inicioMes = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
-    const finMes = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0);
-    const desde = Math.max(0, Math.floor((inicioMes - minFecha) / 86400000));
-    const hasta = Math.min(totalDias, Math.floor((finMes - minFecha) / 86400000) + 1);
-    const ancho = (hasta - desde) * dayWidth;
-    meses.push({
-      label: cursor.toLocaleDateString('es-MX', { month: 'short', year: '2-digit' }).toUpperCase(),
-      ancho
-    });
-    cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
-  }
-
-  // Building HTML
-  const sideRows = lista.map(p => `
-    <div class="gantt-row" data-id="${p.id}">
-      ${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}
-      <span class="nombre">${escapeHtml(p.cliente_nombre || '(sin nombre)')}</span>
-      <span class="cuadrilla">${escapeHtml(cuadrillaCorta(p))}</span>
-    </div>
-  `).join('');
-
-  const todayOffset = Math.floor((hoy - minFecha) / 86400000) * dayWidth;
-
-  const timeRows = lista.map(p => {
-    const bars = barrasProyecto(p, minFecha, dayWidth, totalDias);
-    // Día grid de fondo
-    let dayGrid = '<div class="day-grid">';
-    for (let i = 0; i < totalDias; i++) {
-      const d = new Date(minFecha); d.setDate(d.getDate() + i);
-      const isWeekend = (d.getDay() === 0 || d.getDay() === 6);
-      dayGrid += `<div class="day ${isWeekend ? 'weekend' : ''}"></div>`;
-    }
-    dayGrid += '</div>';
-    return `<div class="gantt-time-row" style="width:${timeWidth}px">${dayGrid}${bars}</div>`;
-  }).join('');
-
-  wrap.innerHTML = `
-    <div class="gantt">
-      <div class="gantt-side">
-        <div class="gantt-side-header">Proyecto · Cuadrilla</div>
-        ${sideRows}
-      </div>
-      <div class="gantt-time">
-        <div class="gantt-time-header" style="grid-template-columns:${meses.map(m => m.ancho + 'px').join(' ')}; width:${timeWidth}px">
-          ${meses.map(m => `<div class="month">${m.label}</div>`).join('')}
-        </div>
-        <div style="position:relative">
-          <div class="gantt-today" style="left:${todayOffset}px; height:${lista.length * 44}px"></div>
-          ${timeRows}
-        </div>
-      </div>
-    </div>
-  `;
-
-  wrap.querySelectorAll('.gantt-row').forEach(row => {
-    row.addEventListener('click', () => openDrawer(parseInt(row.dataset.id)));
-  });
-}
-
-function barrasProyecto(p, minFecha, dayWidth, totalDias) {
-  const bars = [];
-  // Barra 1: Pendiente / Trámite — de fecha_venta a fecha_programada_instalacion (o hoy si no hay)
-  if (p.fecha_venta) {
-    const fin = p.fecha_programada_instalacion || p.fecha_inicio_instalacion || new Date().toISOString().slice(0,10);
-    bars.push(makeBar(p.fecha_venta, fin, p.estado === 'En trámite' ? 'estado-tramite' : 'estado-pendiente', p.estado, minFecha, dayWidth));
-  }
-  // Barra 2: Instalación
-  if (p.fecha_programada_instalacion || p.fecha_inicio_instalacion) {
-    const ini = p.fecha_inicio_instalacion || p.fecha_programada_instalacion;
-    const fin = p.fecha_terminacion || p.fecha_programada_instalacion;
-    bars.push(makeBar(ini, fin, 'estado-instalacion', '⚙', minFecha, dayWidth));
-  }
-  // Barra 3: Terminado (un día visual)
-  if (p.fecha_terminacion && p.estado === 'Terminado') {
-    bars.push(makeBar(p.fecha_terminacion, p.fecha_terminacion, 'estado-terminado', '✓ Terminado', minFecha, dayWidth));
-  }
-  return bars.filter(Boolean).join('');
-}
-
-function makeBar(ini, fin, klass, label, minFecha, dayWidth) {
-  if (!ini || !fin) return '';
-  const dIni = parseFecha(ini);
-  const dFin = parseFecha(fin);
-  if (dFin < dIni) return '';
-  const offset = Math.floor((dIni - minFecha) / 86400000) * dayWidth;
-  const ancho = Math.max(dayWidth, (Math.floor((dFin - dIni) / 86400000) + 1) * dayWidth - 2);
-  return `<div class="gantt-bar ${klass}" style="left:${offset}px; width:${ancho}px" title="${escapeHtml(label)}">${escapeHtml(label)}</div>`;
 }
 
 /* ============================================================
@@ -1041,16 +869,28 @@ async function openDrawer(id) {
 
     ${p.bloqueado ? '' : `
       <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px">
-        <button class="btn btn-ghost btn-sm" id="d-cancel">Cerrar</button>
-        <button class="btn btn-sm" id="d-save">Guardar cambios</button>
+        <span style="font-size:11px; color:var(--ink-mute); align-self:center">Usa los botones de abajo para guardar →</span>
       </div>
     `}
   `;
 
+  // Footer siempre visible
+  if (p.bloqueado) {
+    $('#drawer-footer').innerHTML = `
+      <span style="color:var(--warn); font-size:13px; margin-right:auto">🔒 Proyecto bloqueado</span>
+      <button class="btn btn-ghost btn-sm" id="d-cancel">Cerrar</button>
+    `;
+  } else {
+    $('#drawer-footer').innerHTML = `
+      <button class="btn btn-ghost btn-sm" id="d-cancel">Cerrar</button>
+      <button class="btn btn-sm" id="d-save">Guardar cambios</button>
+    `;
+  }
+
   // Bindings del drawer
+  $('#d-cancel').addEventListener('click', closeDrawer);
   if (!p.bloqueado) {
     $('#d-save').addEventListener('click', guardarDrawer);
-    $('#d-cancel').addEventListener('click', closeDrawer);
     $('#cfe-add').addEventListener('click', () => agregarComentario('cfe'));
     $('#gen-add').addEventListener('click', () => agregarComentario('gen'));
   }
@@ -1099,10 +939,20 @@ async function guardarDrawer() {
   const cambios = {};
   document.querySelectorAll('#drawer-body [data-field]').forEach(el => {
     let v = el.value;
-    if (v === '') v = null;
-    if (el.type === 'number' && v !== null) v = parseFloat(v);
-    cambios[el.dataset.field] = v;
+    const field = el.dataset.field;
+
+    // Vacío → null
+    if (v === '' || v === undefined) {
+      v = null;
+    } else if (el.type === 'number') {
+      const n = parseFloat(v);
+      v = isNaN(n) ? null : n;
+    }
+    cambios[field] = v;
   });
+
+  console.log('Guardando proyecto', currentDrawerId, cambios);
+
   const ok = await actualizarProyecto(currentDrawerId, cambios);
   if (ok) {
     toast('Cambios guardados', 'ok');

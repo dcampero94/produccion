@@ -410,6 +410,14 @@ table.tabla {
 .drawer-close:hover { color: var(--ink); }
 
 .drawer-body { flex: 1; overflow-y: auto; padding: 18px 20px; }
+.drawer-footer {
+  border-top: 1px solid var(--line);
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  background: var(--panel);
+}
 
 .section {
   margin-bottom: 26px;
@@ -608,6 +616,7 @@ table.tabla {
     <button class="drawer-close" id="d-close">×</button>
   </div>
   <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-footer" id="drawer-footer"></div>
 </aside>
 
 <div class="toast" id="toast"></div>
@@ -617,7 +626,7 @@ table.tabla {
    CONFIG
    ============================================================ */
 const SUPABASE_URL  = 'https://lernzlbzrgatqkadwhas.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxlcm56bGJ6cmdhdHFrYWR3aGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxODgwMzgsImV4cCI6MjA5Mzc2NDAzOH0.G4AWdtTdxew0_EHGeHx28ijwHJOuyuXyVG0KbR-J8k4';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxlcm56bGJ6cmdhdHFrYWR3aGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxODgwMzgsImV4cCI6MjA5Mzc2NDAzOH0.G4AWdtTdxew0_EHGeHx28ijwHJOuyuXyVG0KbR-J8k4'; // 
 
 // Usuarios V1 — definir contraseñas reales antes de desplegar
 const USERS = {
@@ -704,6 +713,19 @@ function bindUI() {
   // Drawer
   $('#d-close').addEventListener('click', closeDrawer);
   $('#drawer-backdrop').addEventListener('click', closeDrawer);
+
+  // Atajo de teclado: Ctrl/Cmd + S para guardar mientras el drawer está abierto
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      if (currentDrawerId && document.getElementById('d-save')) {
+        e.preventDefault();
+        guardarDrawer();
+      }
+    }
+    if (e.key === 'Escape' && currentDrawerId) {
+      closeDrawer();
+    }
+  });
 }
 
 /* ============================================================
@@ -746,8 +768,13 @@ async function addComentario(tabla, proyectoId, comentario) {
 }
 
 async function actualizarProyecto(id, cambios) {
-  const { error } = await supa.from('proyectos').update(cambios).eq('id', id);
-  if (error) { toast('Error: ' + error.message, 'err'); return false; }
+  const { data, error } = await supa.from('proyectos').update(cambios).eq('id', id).select();
+  if (error) {
+    console.error('Error actualizando proyecto:', error);
+    toast('Error: ' + error.message, 'err');
+    return false;
+  }
+  console.log('Proyecto actualizado:', data);
   return true;
 }
 
@@ -1041,16 +1068,28 @@ async function openDrawer(id) {
 
     ${p.bloqueado ? '' : `
       <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px">
-        <button class="btn btn-ghost btn-sm" id="d-cancel">Cerrar</button>
-        <button class="btn btn-sm" id="d-save">Guardar cambios</button>
+        <span style="font-size:11px; color:var(--ink-mute); align-self:center">Usa los botones de abajo para guardar →</span>
       </div>
     `}
   `;
 
+  // Footer siempre visible
+  if (p.bloqueado) {
+    $('#drawer-footer').innerHTML = `
+      <span style="color:var(--warn); font-size:13px; margin-right:auto">🔒 Proyecto bloqueado</span>
+      <button class="btn btn-ghost btn-sm" id="d-cancel">Cerrar</button>
+    `;
+  } else {
+    $('#drawer-footer').innerHTML = `
+      <button class="btn btn-ghost btn-sm" id="d-cancel">Cerrar</button>
+      <button class="btn btn-sm" id="d-save">Guardar cambios</button>
+    `;
+  }
+
   // Bindings del drawer
+  $('#d-cancel').addEventListener('click', closeDrawer);
   if (!p.bloqueado) {
     $('#d-save').addEventListener('click', guardarDrawer);
-    $('#d-cancel').addEventListener('click', closeDrawer);
     $('#cfe-add').addEventListener('click', () => agregarComentario('cfe'));
     $('#gen-add').addEventListener('click', () => agregarComentario('gen'));
   }
@@ -1099,10 +1138,20 @@ async function guardarDrawer() {
   const cambios = {};
   document.querySelectorAll('#drawer-body [data-field]').forEach(el => {
     let v = el.value;
-    if (v === '') v = null;
-    if (el.type === 'number' && v !== null) v = parseFloat(v);
-    cambios[el.dataset.field] = v;
+    const field = el.dataset.field;
+
+    // Vacío → null
+    if (v === '' || v === undefined) {
+      v = null;
+    } else if (el.type === 'number') {
+      const n = parseFloat(v);
+      v = isNaN(n) ? null : n;
+    }
+    cambios[field] = v;
   });
+
+  console.log('Guardando proyecto', currentDrawerId, cambios);
+
   const ok = await actualizarProyecto(currentDrawerId, cambios);
   if (ok) {
     toast('Cambios guardados', 'ok');

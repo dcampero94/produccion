@@ -370,6 +370,9 @@ table.tabla {
 .comentario-input-row { display: flex; gap: 8px; }
 .comentario-input-row textarea { flex: 1; min-height: 38px; resize: vertical; }
 
+.combo-row { display: flex; gap: 6px; }
+.combo-row select { flex: 1; }
+
 .banner-bloqueado {
   background: rgba(251,146,60,0.1);
   border: 1px solid var(--warn);
@@ -576,6 +579,7 @@ function startApp() {
   $('#app').classList.remove('hidden');
   $('#user-chip').textContent = currentUser;
   bindUI();
+  cargarCatalogo();
   loadProyectos();
 }
 
@@ -667,6 +671,35 @@ async function actualizarProyecto(id, cambios) {
     return false;
   }
   console.log('Proyecto actualizado:', data);
+  return true;
+}
+
+// Catálogo de equipos (marcas + potencias)
+let catalogoCache = { panel: [], inversor: [] };
+
+async function cargarCatalogo() {
+  const { data, error } = await supa
+    .from('catalogo_equipos')
+    .select('*')
+    .order('marca');
+  if (error) {
+    console.error('Error cargando catálogo:', error);
+    return;
+  }
+  catalogoCache.panel    = (data || []).filter(x => x.tipo === 'panel');
+  catalogoCache.inversor = (data || []).filter(x => x.tipo === 'inversor');
+}
+
+async function agregarAlCatalogo(tipo, marca, potencia) {
+  if (!marca) return false;
+  const { error } = await supa.from('catalogo_equipos').insert({
+    tipo, marca, potencia: potencia || null, creado_por: currentUser
+  });
+  if (error && !error.message.includes('duplicate')) {
+    console.error('Error agregando al catálogo:', error);
+    return false;
+  }
+  await cargarCatalogo();
   return true;
 }
 
@@ -800,7 +833,6 @@ async function openDrawer(id) {
       <div class="grid-2">
         <div class="field"><label>Nombre</label><input value="${escapeAttr(p.cliente_nombre)}" data-field="cliente_nombre" ${ro}></div>
         <div class="field"><label>Teléfono</label><input value="${escapeAttr(p.cliente_telefono)}" data-field="cliente_telefono" ${ro}></div>
-        <div class="field" style="grid-column:1/-1"><label>Dirección de instalación</label><input value="${escapeAttr(p.direccion_instalacion)}" data-field="direccion_instalacion" ${ro}></div>
         <div class="field"><label>Asesor original</label><input value="${escapeAttr(p.asesor_original)}" data-field="asesor_original" ${ro}></div>
         <div class="field"><label>Fecha de venta</label><input type="date" value="${p.fecha_venta || ''}" data-field="fecha_venta" ${ro}></div>
       </div>
@@ -829,15 +861,46 @@ async function openDrawer(id) {
     <div class="section">
       <h3>Datos técnicos</h3>
       <div class="grid-3">
-        <div class="field"><label>kW del sistema</label><input type="number" step="0.01" value="${p.kw_sistema || ''}" data-field="kw_sistema" ${ro}></div>
-        <div class="field"><label># paneles</label><input type="number" value="${p.num_paneles || ''}" data-field="num_paneles" ${ro}></div>
-        <div class="field"><label>Tipo de estructura</label><input value="${escapeAttr(p.tipo_estructura)}" data-field="tipo_estructura" ${ro}></div>
-        <div class="field"><label>Marca paneles</label><input value="${escapeAttr(p.marca_paneles)}" data-field="marca_paneles" ${ro}></div>
-        <div class="field"><label>Modelo paneles</label><input value="${escapeAttr(p.modelo_paneles)}" data-field="modelo_paneles" ${ro}></div>
-        <div class="field"></div>
-        <div class="field"><label>Marca inversor</label><input value="${escapeAttr(p.marca_inversor)}" data-field="marca_inversor" ${ro}></div>
-        <div class="field"><label>Modelo inversor</label><input value="${escapeAttr(p.modelo_inversor)}" data-field="modelo_inversor" ${ro}></div>
-        <div class="field"></div>
+        <div class="field">
+          <label># paneles</label>
+          <input type="number" value="${p.num_paneles || ''}" data-field="num_paneles" id="d-num-paneles" ${ro}>
+        </div>
+        <div class="field">
+          <label>Potencia por panel (W)</label>
+          <input type="number" step="any" value="${p.potencia_paneles || ''}" data-field="potencia_paneles" id="d-pot-paneles" ${ro}>
+        </div>
+        <div class="field">
+          <label>kW del sistema (auto)</label>
+          <input type="number" step="0.01" value="${p.kw_sistema || ''}" data-field="kw_sistema" id="d-kw-sistema" ${ro} readonly style="background:var(--panel-2)">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Marca de paneles</label>
+          <div class="combo-row">
+            <select id="d-marca-paneles" ${ro}>
+              <option value="">— elegir —</option>
+              ${marcaOptionsHTML('panel', p.marca_paneles)}
+              <option value="__nueva__">+ Agregar nueva marca…</option>
+            </select>
+            <input value="${escapeAttr(p.marca_paneles)}" data-field="marca_paneles" id="d-marca-paneles-input" ${ro} class="hidden">
+          </div>
+        </div>
+        <div class="field">
+          <label>Marca de inversor</label>
+          <div class="combo-row">
+            <select id="d-marca-inversor" ${ro}>
+              <option value="">— elegir —</option>
+              ${marcaOptionsHTML('inversor', p.marca_inversor)}
+              <option value="__nueva__">+ Agregar nueva marca…</option>
+            </select>
+            <input value="${escapeAttr(p.marca_inversor)}" data-field="marca_inversor" id="d-marca-inversor-input" ${ro} class="hidden">
+          </div>
+        </div>
+        <div class="field">
+          <label>Potencia de inversor (kW)</label>
+          <input type="number" step="any" value="${p.potencia_inversor || ''}" data-field="potencia_inversor" ${ro}>
+        </div>
       </div>
       <div class="field"><label>Notas técnicas</label><textarea data-field="notas_tecnicas" ${ro}>${escapeHtml(p.notas_tecnicas || '')}</textarea></div>
     </div>
@@ -893,10 +956,65 @@ async function openDrawer(id) {
     $('#d-save').addEventListener('click', guardarDrawer);
     $('#cfe-add').addEventListener('click', () => agregarComentario('cfe'));
     $('#gen-add').addEventListener('click', () => agregarComentario('gen'));
+
+    // Cálculo automático de kW = (# paneles × potencia panel) / 1000
+    const recalcularKW = () => {
+      const n = parseFloat($('#d-num-paneles').value) || 0;
+      const w = parseFloat($('#d-pot-paneles').value) || 0;
+      if (n > 0 && w > 0) {
+        $('#d-kw-sistema').value = ((n * w) / 1000).toFixed(2);
+      }
+    };
+    $('#d-num-paneles').addEventListener('input', recalcularKW);
+    $('#d-pot-paneles').addEventListener('input', recalcularKW);
+
+    // Selector de marcas: sincronizar select con input oculto + agregar nuevas
+    bindMarcaSelect('panel', $('#d-marca-paneles'), $('#d-marca-paneles-input'));
+    bindMarcaSelect('inversor', $('#d-marca-inversor'), $('#d-marca-inversor-input'));
   }
 
   // Cargar bitácoras
   cargarBitacoras(id);
+}
+
+function bindMarcaSelect(tipo, selectEl, inputEl) {
+  selectEl.addEventListener('change', async () => {
+    const v = selectEl.value;
+    if (v === '__nueva__') {
+      const nueva = prompt(`Nueva marca de ${tipo}:`);
+      if (nueva && nueva.trim()) {
+        const marca = nueva.trim();
+        const ok = await agregarAlCatalogo(tipo, marca, null);
+        if (ok) {
+          toast(`Marca "${marca}" guardada`, 'ok');
+          // Repoblar el select
+          const opciones = ['<option value="">— elegir —</option>',
+                            marcaOptionsHTML(tipo, marca),
+                            '<option value="__nueva__">+ Agregar nueva marca…</option>'].join('');
+          selectEl.innerHTML = opciones;
+          selectEl.value = marca;
+          inputEl.value = marca;
+        }
+      } else {
+        selectEl.value = inputEl.value || '';
+      }
+    } else {
+      inputEl.value = v;
+    }
+  });
+}
+
+function marcaOptionsHTML(tipo, seleccionada) {
+  const lista = catalogoCache[tipo] || [];
+  // Marcas únicas
+  const marcas = [...new Set(lista.map(x => x.marca))].sort();
+  // Si la seleccionada no está en el catálogo (caso heredado), agregarla
+  if (seleccionada && !marcas.includes(seleccionada)) {
+    marcas.unshift(seleccionada);
+  }
+  return marcas.map(m =>
+    `<option value="${escapeAttr(m)}" ${m === seleccionada ? 'selected' : ''}>${escapeHtml(m)}</option>`
+  ).join('');
 }
 
 async function cargarBitacoras(id) {
@@ -941,7 +1059,6 @@ async function guardarDrawer() {
     let v = el.value;
     const field = el.dataset.field;
 
-    // Vacío → null
     if (v === '' || v === undefined) {
       v = null;
     } else if (el.type === 'number') {
@@ -953,12 +1070,31 @@ async function guardarDrawer() {
 
   console.log('Guardando proyecto', currentDrawerId, cambios);
 
-  const ok = await actualizarProyecto(currentDrawerId, cambios);
+  // Si hay marcas con potencia, alimentar el catálogo
+  if (cambios.marca_paneles && cambios.potencia_paneles) {
+    agregarAlCatalogo('panel', cambios.marca_paneles, cambios.potencia_paneles);
+  }
+  if (cambios.marca_inversor && cambios.potencia_inversor) {
+    agregarAlCatalogo('inversor', cambios.marca_inversor, cambios.potencia_inversor);
+  }
+
+  const idGuardado = currentDrawerId;
+  const ok = await actualizarProyecto(idGuardado, cambios);
   if (ok) {
     toast('Cambios guardados', 'ok');
     await loadProyectos();
-    closeDrawer();
+    // Re-renderizar el drawer con datos frescos sin cerrarlo.
+    // Esto re-bindea todos los listeners correctamente.
+    if (currentDrawerId === idGuardado) {
+      reabrirDrawer(idGuardado);
+    }
   }
+}
+
+function reabrirDrawer(id) {
+  // Cerrar visualmente y reabrir para refrescar bindings
+  currentDrawerId = null;
+  openDrawer(id);
 }
 
 function closeDrawer() {

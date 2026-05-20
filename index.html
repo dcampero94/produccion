@@ -30,10 +30,16 @@
   --err:     #f87171;
   --info:     #60a5fa;
 
-  --st-pendiente:   #6b7390;
-  --st-tramite:     #60a5fa;
-  --st-instalacion:#fb923c;
-  --st-terminado:  #4ade80;
+  /* Instalación (tonos cálidos) */
+  --inst-pendiente:    #6b7390;
+  --inst-programada:   #fb923c;
+  --inst-encurso:      #f97316;
+  --inst-instalada:    #4ade80;
+  /* Trámite (tonos fríos) */
+  --tra-sin:           #6b7390;
+  --tra-encurso:       #60a5fa;
+  --tra-aprobado:      #4ade80;
+  --tra-na:            #475569;
 
   --r-sm: 4px;
   --r:    6px;
@@ -149,19 +155,20 @@ header.topbar {
   border-bottom: 1px solid var(--line);
 }
 .brand {
-  display: flex; align-items: center; gap: 8px;
-  font-weight: 600;
+  display: flex; align-items: center; gap: 12px;
 }
-.brand-mark {
-  width: 22px; height: 22px;
-  background: var(--accent);
-  border-radius: var(--r-sm);
-  display: grid; place-items: center;
-  color: #000; font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
+.brand-logo {
+  height: 26px;
+  display: block;
+}
+.brand-sub {
+  color: var(--ink-mute);
   font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-left: 1px solid var(--line-2);
+  padding-left: 12px;
 }
-.brand-sub { color: var(--ink-mute); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
 
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 .user-chip {
@@ -193,13 +200,31 @@ header.topbar {
 }
 .filter-label { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; }
 
-.counters {
-  display: flex; gap: 6px; margin-left: auto;
+.counters-block {
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  padding: 8px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.counters-row {
+  display: flex; gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.counters-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-mute);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  min-width: 110px;
 }
 .counter {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: var(--r);
   background: var(--bg);
   border: 1px solid var(--line);
@@ -263,11 +288,18 @@ table.tabla {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 500;
   border: 1px solid;
+  white-space: nowrap;
 }
-.estado-pill.estado-pendiente   { background: rgba(107,115,144,0.15); border-color: var(--st-pendiente); color: var(--st-pendiente); }
-.estado-pill.estado-tramite     { background: rgba(96,165,250,0.15);  border-color: var(--st-tramite);  color: var(--st-tramite); }
-.estado-pill.estado-instalacion { background: rgba(251,146,60,0.15);  border-color: var(--st-instalacion); color: var(--st-instalacion); }
-.estado-pill.estado-terminado   { background: rgba(74,222,128,0.15);  border-color: var(--st-terminado);   color: var(--st-terminado); }
+/* Instalación */
+.inst-pendiente   { background: rgba(107,115,144,0.15); border-color: var(--inst-pendiente);  color: var(--inst-pendiente); }
+.inst-programada  { background: rgba(251,146,60,0.15);  border-color: var(--inst-programada); color: var(--inst-programada); }
+.inst-encurso     { background: rgba(249,115,22,0.18);  border-color: var(--inst-encurso);    color: var(--inst-encurso); }
+.inst-instalada   { background: rgba(74,222,128,0.15);  border-color: var(--inst-instalada);  color: var(--inst-instalada); }
+/* Trámite */
+.tra-sin          { background: rgba(107,115,144,0.15); border-color: var(--tra-sin);      color: var(--tra-sin); }
+.tra-encurso      { background: rgba(96,165,250,0.15);  border-color: var(--tra-encurso);  color: var(--tra-encurso); }
+.tra-aprobado     { background: rgba(74,222,128,0.15);  border-color: var(--tra-aprobado); color: var(--tra-aprobado); }
+.tra-na           { background: rgba(71,85,105,0.15);   border-color: var(--tra-na);       color: var(--tra-na); }
 
 .lock-icon { color: var(--warn); font-size: 11px; margin-right: 6px; }
 
@@ -416,13 +448,9 @@ table.tabla {
 <div id="login-screen">
   <form class="login-card" id="login-form" autocomplete="off">
     <div class="login-brand">
-      <div class="login-brand-mark">T</div>
-      <div>
-        <div style="font-weight:600">Tecnoden</div>
-        <div class="login-brand-text">CRM Producción</div>
-      </div>
+      <img src="logo.png" alt="Tecnoden" style="height:32px; display:block">
     </div>
-    <h1 class="login-title">Iniciar sesión</h1>
+    <h1 class="login-title">CRM Producción</h1>
     <p class="login-sub">Seguimiento de instalaciones solares</p>
 
     <div class="field">
@@ -443,11 +471,8 @@ table.tabla {
 
   <header class="topbar">
     <div class="brand">
-      <div class="brand-mark">T</div>
-      <div>
-        <div>Producción</div>
-        <div class="brand-sub" style="margin-top:-2px">Tecnoden</div>
-      </div>
+      <img src="logo.png" alt="Tecnoden" class="brand-logo">
+      <div class="brand-sub">Producción</div>
     </div>
 
     <div class="topbar-right">
@@ -458,12 +483,19 @@ table.tabla {
 
   <div class="filters">
     <span class="filter-label">Filtrar</span>
-    <select id="f-estado">
-      <option value="">Todos los estados</option>
+    <select id="f-inst">
+      <option value="">Instalación: todos</option>
       <option>Pendiente</option>
-      <option>En trámite</option>
+      <option>Programada</option>
       <option>En instalación</option>
-      <option>Terminado</option>
+      <option>Instalada</option>
+    </select>
+    <select id="f-tramite">
+      <option value="">Trámite: todos</option>
+      <option>Sin iniciar</option>
+      <option>En trámite</option>
+      <option>Aprobado</option>
+      <option>N/A</option>
     </select>
     <select id="f-cuadrilla">
       <option value="">Todas las cuadrillas</option>
@@ -474,9 +506,9 @@ table.tabla {
       <option value="__sin">Sin asignar</option>
     </select>
     <input id="f-busqueda" placeholder="Buscar cliente…" style="min-width:200px">
-
-    <div class="counters" id="counters"></div>
   </div>
+
+  <div class="counters-block" id="counters-block"></div>
 
   <main>
     <div class="tabla-wrap">
@@ -485,7 +517,8 @@ table.tabla {
           <tr>
             <th data-sort="cotizacion_num">#</th>
             <th data-sort="cliente_nombre">Cliente</th>
-            <th data-sort="estado">Estado</th>
+            <th data-sort="estado_instalacion">Instalación</th>
+            <th data-sort="estado_tramite">Trámite CFE</th>
             <th data-sort="cuadrilla">Cuadrilla</th>
             <th data-sort="kw_sistema">kW</th>
             <th data-sort="fecha_programada_instalacion">Programada</th>
@@ -531,7 +564,8 @@ const USERS = {
 };
 
 const CUADRILLAS = ['Cuadrilla Tecnoden', 'Cuadrilla Alex', 'Cuadrilla Javier', 'Otro'];
-const ESTADOS    = ['Pendiente', 'En trámite', 'En instalación', 'Terminado'];
+const ESTADOS_INST    = ['Pendiente', 'Programada', 'En instalación', 'Instalada'];
+const ESTADOS_TRAMITE = ['Sin iniciar', 'En trámite', 'Aprobado', 'N/A'];
 
 const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
@@ -588,8 +622,14 @@ function startApp() {
    ============================================================ */
 function bindUI() {
   // Filtros
-  ['f-estado', 'f-cuadrilla', 'f-busqueda'].forEach(id => {
+  ['f-inst', 'f-tramite', 'f-cuadrilla', 'f-busqueda'].forEach(id => {
     $('#' + id).addEventListener('input', render);
+  });
+
+  // Click en cualquier fila (delegación: sobrevive a re-renders)
+  $('#tabla-body').addEventListener('click', (e) => {
+    const tr = e.target.closest('tr[data-id]');
+    if (tr) openDrawer(parseInt(tr.dataset.id));
   });
 
   // Sort de la tabla
@@ -707,11 +747,13 @@ async function agregarAlCatalogo(tipo, marca, potencia) {
    FILTROS
    ============================================================ */
 function aplicarFiltros(lista) {
-  const fEst = $('#f-estado').value;
-  const fCua = $('#f-cuadrilla').value;
-  const fBus = $('#f-busqueda').value.trim().toLowerCase();
+  const fInst = $('#f-inst').value;
+  const fTra  = $('#f-tramite').value;
+  const fCua  = $('#f-cuadrilla').value;
+  const fBus  = $('#f-busqueda').value.trim().toLowerCase();
   return lista.filter(p => {
-    if (fEst && p.estado !== fEst) return false;
+    if (fInst && p.estado_instalacion !== fInst) return false;
+    if (fTra  && p.estado_tramite     !== fTra)  return false;
     if (fCua === '__sin') { if (p.cuadrilla) return false; }
     else if (fCua && p.cuadrilla !== fCua) return false;
     if (fBus) {
@@ -756,30 +798,39 @@ function actualizarHeadersSort() {
 }
 
 function renderCounters(filtrados) {
-  const colors = {
-    'Pendiente':       'var(--st-pendiente)',
-    'En trámite':      'var(--st-tramite)',
-    'En instalación':  'var(--st-instalacion)',
-    'Terminado':       'var(--st-terminado)'
+  const cInst = {
+    'Pendiente':       'var(--inst-pendiente)',
+    'Programada':      'var(--inst-programada)',
+    'En instalación':  'var(--inst-encurso)',
+    'Instalada':       'var(--inst-instalada)'
   };
-  $('#counters').innerHTML = ESTADOS.map(est => {
-    const n = filtrados.filter(p => p.estado === est).length;
-    return `<div class="counter">
-      <span class="dot" style="background:${colors[est]}"></span>
-      <span>${est}</span>
-      <span class="num">${n}</span>
-    </div>`;
+  const cTra = {
+    'Sin iniciar': 'var(--tra-sin)',
+    'En trámite':  'var(--tra-encurso)',
+    'Aprobado':    'var(--tra-aprobado)',
+    'N/A':         'var(--tra-na)'
+  };
+  const fila1 = ESTADOS_INST.map(est => {
+    const n = filtrados.filter(p => p.estado_instalacion === est).length;
+    return `<div class="counter"><span class="dot" style="background:${cInst[est]}"></span><span>${est}</span><span class="num">${n}</span></div>`;
   }).join('');
+  const fila2 = ESTADOS_TRAMITE.map(est => {
+    const n = filtrados.filter(p => p.estado_tramite === est).length;
+    return `<div class="counter"><span class="dot" style="background:${cTra[est]}"></span><span>${est}</span><span class="num">${n}</span></div>`;
+  }).join('');
+  $('#counters-block').innerHTML = `
+    <div class="counters-row"><span class="counters-label">Instalación</span>${fila1}</div>
+    <div class="counters-row"><span class="counters-label">Trámite CFE</span>${fila2}</div>
+  `;
 }
 
 function renderTabla(lista) {
   const body = $('#tabla-body');
   if (lista.length === 0) {
-    body.innerHTML = `<tr><td colspan="9"><div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div></td></tr>`;
+    body.innerHTML = `<tr><td colspan="10"><div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div></td></tr>`;
     return;
   }
   body.innerHTML = lista.map(p => {
-    const estClass = estadoClass(p.estado);
     const cuadrilla = p.cuadrilla === 'Otro' ? (p.cuadrilla_otro || 'Otro') : p.cuadrilla;
     const cuadrillaCell = cuadrilla
       ? `<td class="mono" style="font-size:12px">${escapeHtml(cuadrilla)}</td>`
@@ -790,7 +841,8 @@ function renderTabla(lista) {
     return `<tr class="${p.bloqueado ? 'bloqueado' : ''}" data-id="${p.id}">
       <td class="mono" style="color:var(--ink-mute)">${p.cotizacion_num ? '#' + p.cotizacion_num : '—'}</td>
       <td>${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}</td>
-      <td><span class="estado-pill ${estClass}">${p.estado}</span></td>
+      <td><span class="estado-pill ${classInst(p.estado_instalacion)}">${p.estado_instalacion || '—'}</span></td>
+      <td><span class="estado-pill ${classTra(p.estado_tramite)}">${p.estado_tramite || '—'}</span></td>
       ${cuadrillaCell}
       <td class="mono">${p.kw_sistema ? p.kw_sistema + ' kW' : '—'}</td>
       ${fechaCell}
@@ -799,9 +851,23 @@ function renderTabla(lista) {
       <td>${escapeHtml(p.asesor_original || '—')}</td>
     </tr>`;
   }).join('');
-  body.querySelectorAll('tr[data-id]').forEach(tr => {
-    tr.addEventListener('click', () => openDrawer(parseInt(tr.dataset.id)));
-  });
+}
+
+function classInst(estado) {
+  return {
+    'Pendiente':      'inst-pendiente',
+    'Programada':     'inst-programada',
+    'En instalación': 'inst-encurso',
+    'Instalada':      'inst-instalada'
+  }[estado] || 'inst-pendiente';
+}
+function classTra(estado) {
+  return {
+    'Sin iniciar': 'tra-sin',
+    'En trámite':  'tra-encurso',
+    'Aprobado':    'tra-aprobado',
+    'N/A':         'tra-na'
+  }[estado] || 'tra-sin';
 }
 
 /* ============================================================
@@ -819,8 +885,11 @@ async function openDrawer(id) {
   const cuadrillaSelect = CUADRILLAS.map(c =>
     `<option ${p.cuadrilla === c ? 'selected' : ''}>${c}</option>`
   ).join('');
-  const estadoSelect = ESTADOS.map(e =>
-    `<option ${p.estado === e ? 'selected' : ''}>${e}</option>`
+  const instSelect = ESTADOS_INST.map(e =>
+    `<option ${p.estado_instalacion === e ? 'selected' : ''}>${e}</option>`
+  ).join('');
+  const traSelect = ESTADOS_TRAMITE.map(e =>
+    `<option ${p.estado_tramite === e ? 'selected' : ''}>${e}</option>`
   ).join('');
 
   const ro = p.bloqueado ? 'disabled' : '';
@@ -839,17 +908,27 @@ async function openDrawer(id) {
     </div>
 
     <div class="section">
-      <h3>Pipeline</h3>
-      <div class="grid-3">
-        <div class="field"><label>Estado</label>
-          <select data-field="estado" ${ro}>${estadoSelect}</select>
+      <h3>Estado del proyecto</h3>
+      <div class="grid-2">
+        <div class="field"><label>Instalación</label>
+          <select data-field="estado_instalacion" ${ro}>${instSelect}</select>
         </div>
+        <div class="field"><label>Trámite CFE</label>
+          <select data-field="estado_tramite" ${ro}>${traSelect}</select>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Cuadrilla y fechas</h3>
+      <div class="grid-3">
         <div class="field"><label>Cuadrilla</label>
           <select data-field="cuadrilla" ${ro} id="d-cuadrilla"><option value="">—</option>${cuadrillaSelect}</select>
         </div>
         <div class="field"><label>Si "Otro", ¿cuál?</label>
           <input value="${escapeAttr(p.cuadrilla_otro)}" data-field="cuadrilla_otro" ${ro} id="d-cuadrilla-otro">
         </div>
+        <div class="field"></div>
       </div>
       <div class="grid-3">
         <div class="field"><label>Programada</label><input type="date" value="${p.fecha_programada_instalacion || ''}" data-field="fecha_programada_instalacion" ${ro}></div>
@@ -859,22 +938,8 @@ async function openDrawer(id) {
     </div>
 
     <div class="section">
-      <h3>Datos técnicos</h3>
+      <h3>Datos técnicos · Paneles</h3>
       <div class="grid-3">
-        <div class="field">
-          <label># paneles</label>
-          <input type="number" value="${p.num_paneles || ''}" data-field="num_paneles" id="d-num-paneles" ${ro}>
-        </div>
-        <div class="field">
-          <label>Potencia por panel (W)</label>
-          <input type="number" step="any" value="${p.potencia_paneles || ''}" data-field="potencia_paneles" id="d-pot-paneles" ${ro}>
-        </div>
-        <div class="field">
-          <label>kW del sistema (auto)</label>
-          <input type="number" step="0.01" value="${p.kw_sistema || ''}" data-field="kw_sistema" id="d-kw-sistema" ${ro} readonly style="background:var(--panel-2)">
-        </div>
-      </div>
-      <div class="grid-2">
         <div class="field">
           <label>Marca de paneles</label>
           <div class="combo-row">
@@ -887,6 +952,24 @@ async function openDrawer(id) {
           </div>
         </div>
         <div class="field">
+          <label># paneles</label>
+          <input type="number" value="${p.num_paneles || ''}" data-field="num_paneles" id="d-num-paneles" ${ro}>
+        </div>
+        <div class="field">
+          <label>Potencia por panel (W)</label>
+          <input type="number" step="any" value="${p.potencia_paneles || ''}" data-field="potencia_paneles" id="d-pot-paneles" ${ro}>
+        </div>
+      </div>
+      <div class="field" style="max-width:280px">
+        <label>kW del sistema (auto)</label>
+        <input type="number" step="0.01" value="${p.kw_sistema || ''}" data-field="kw_sistema" id="d-kw-sistema" ${ro} readonly style="background:var(--panel-2)">
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Datos técnicos · Inversor</h3>
+      <div class="grid-3">
+        <div class="field">
           <label>Marca de inversor</label>
           <div class="combo-row">
             <select id="d-marca-inversor" ${ro}>
@@ -898,11 +981,19 @@ async function openDrawer(id) {
           </div>
         </div>
         <div class="field">
+          <label># inversores</label>
+          <input type="number" value="${p.num_inversores || ''}" data-field="num_inversores" ${ro}>
+        </div>
+        <div class="field">
           <label>Potencia de inversor (kW)</label>
           <input type="number" step="any" value="${p.potencia_inversor || ''}" data-field="potencia_inversor" ${ro}>
         </div>
       </div>
-      <div class="field"><label>Notas técnicas</label><textarea data-field="notas_tecnicas" ${ro}>${escapeHtml(p.notas_tecnicas || '')}</textarea></div>
+    </div>
+
+    <div class="section">
+      <h3>Notas técnicas</h3>
+      <div class="field"><textarea data-field="notas_tecnicas" ${ro}>${escapeHtml(p.notas_tecnicas || '')}</textarea></div>
     </div>
 
     <div class="section">
@@ -1078,23 +1169,12 @@ async function guardarDrawer() {
     agregarAlCatalogo('inversor', cambios.marca_inversor, cambios.potencia_inversor);
   }
 
-  const idGuardado = currentDrawerId;
-  const ok = await actualizarProyecto(idGuardado, cambios);
+  const ok = await actualizarProyecto(currentDrawerId, cambios);
   if (ok) {
     toast('Cambios guardados', 'ok');
     await loadProyectos();
-    // Re-renderizar el drawer con datos frescos sin cerrarlo.
-    // Esto re-bindea todos los listeners correctamente.
-    if (currentDrawerId === idGuardado) {
-      reabrirDrawer(idGuardado);
-    }
+    closeDrawer();
   }
-}
-
-function reabrirDrawer(id) {
-  // Cerrar visualmente y reabrir para refrescar bindings
-  currentDrawerId = null;
-  openDrawer(id);
 }
 
 function closeDrawer() {
@@ -1113,11 +1193,6 @@ function estadoClass(e) {
     'En instalación':  'estado-instalacion',
     'Terminado':       'estado-terminado'
   }[e] || 'estado-pendiente';
-}
-function cuadrillaCorta(p) {
-  if (!p.cuadrilla) return '—';
-  if (p.cuadrilla === 'Otro') return p.cuadrilla_otro || 'Otro';
-  return p.cuadrilla.replace('Cuadrilla ', '');
 }
 function parseFecha(f) {
   const d = new Date(f + 'T00:00:00');

@@ -200,42 +200,6 @@ header.topbar {
 }
 .filter-label { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; }
 
-.counters-block {
-  background: var(--panel);
-  border-bottom: 1px solid var(--line);
-  padding: 10px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.counters-row {
-  display: flex; gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.counters-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: var(--ink-mute);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  min-width: 140px;
-  padding-right: 12px;
-  border-right: 1px solid var(--line-2);
-  margin-right: 6px;
-}
-.counter {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  padding: 3px 9px;
-  border-radius: var(--r);
-  background: var(--bg);
-  border: 1px solid var(--line);
-  display: flex; align-items: center; gap: 6px;
-}
-.counter .dot { width: 7px; height: 7px; border-radius: 50%; }
-.counter .num { color: var(--ink); font-weight: 600; }
-
 /* ============================================================ MAIN AREA */
 main {
   overflow: auto;
@@ -511,8 +475,6 @@ table.tabla {
     <input id="f-busqueda" placeholder="Buscar cliente…" style="min-width:200px">
   </div>
 
-  <div class="counters-block" id="counters-block"></div>
-
   <main>
     <div class="tabla-wrap">
       <table class="tabla">
@@ -635,6 +597,14 @@ function bindUI() {
     if (tr) openDrawer(parseInt(tr.dataset.id));
   });
 
+  // Footer del drawer (delegación: los botones se crean dinámicamente)
+  $('#drawer-footer').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    if (btn.dataset.action === 'save')  guardarDrawer();
+    if (btn.dataset.action === 'close') closeDrawer();
+  });
+
   // Sort de la tabla
   document.querySelectorAll('.tabla th[data-sort]').forEach(th => {
     th.addEventListener('click', () => {
@@ -656,7 +626,8 @@ function bindUI() {
   // Atajo de teclado: Ctrl/Cmd + S para guardar mientras el drawer está abierto
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-      if (currentDrawerId && document.getElementById('d-save')) {
+      const saveBtn = document.querySelector('#drawer-footer button[data-action="save"]');
+      if (currentDrawerId && saveBtn) {
         e.preventDefault();
         guardarDrawer();
       }
@@ -738,11 +709,14 @@ async function agregarAlCatalogo(tipo, marca, potencia) {
   const { error } = await supa.from('catalogo_equipos').insert({
     tipo, marca, potencia: potencia || null, creado_por: currentUser
   });
-  if (error && !error.message.includes('duplicate')) {
+  // 23505 = unique_violation en Postgres → ya existe, todo bien, lo ignoramos
+  if (error && error.code !== '23505') {
     console.error('Error agregando al catálogo:', error);
     return false;
   }
-  await cargarCatalogo();
+  if (!error) {
+    await cargarCatalogo();
+  }
   return true;
 }
 
@@ -773,7 +747,6 @@ function aplicarFiltros(lista) {
 function render() {
   const filtrados = aplicarFiltros(proyectos);
   ordenar(filtrados);
-  renderCounters(filtrados);
   renderTabla(filtrados);
   actualizarHeadersSort();
 }
@@ -798,33 +771,6 @@ function actualizarHeadersSort() {
       th.classList.add(sortState.dir === 'asc' ? 'sort-asc' : 'sort-desc');
     }
   });
-}
-
-function renderCounters(filtrados) {
-  const cInst = {
-    'Pendiente':       'var(--inst-pendiente)',
-    'Programada':      'var(--inst-programada)',
-    'En instalación':  'var(--inst-encurso)',
-    'Instalada':       'var(--inst-instalada)'
-  };
-  const cTra = {
-    'Sin iniciar': 'var(--tra-sin)',
-    'En trámite':  'var(--tra-encurso)',
-    'Aprobado':    'var(--tra-aprobado)',
-    'N/A':         'var(--tra-na)'
-  };
-  const fila1 = ESTADOS_INST.map(est => {
-    const n = filtrados.filter(p => p.estado_instalacion === est).length;
-    return `<div class="counter"><span class="dot" style="background:${cInst[est]}"></span><span>${est}</span><span class="num">${n}</span></div>`;
-  }).join('');
-  const fila2 = ESTADOS_TRAMITE.map(est => {
-    const n = filtrados.filter(p => p.estado_tramite === est).length;
-    return `<div class="counter"><span class="dot" style="background:${cTra[est]}"></span><span>${est}</span><span class="num">${n}</span></div>`;
-  }).join('');
-  $('#counters-block').innerHTML = `
-    <div class="counters-row"><span class="counters-label">Instalación</span>${fila1}</div>
-    <div class="counters-row"><span class="counters-label">Trámite CFE</span>${fila2}</div>
-  `;
 }
 
 function renderTabla(lista) {
@@ -1035,36 +981,44 @@ async function openDrawer(id) {
   if (p.bloqueado) {
     $('#drawer-footer').innerHTML = `
       <span style="color:var(--warn); font-size:13px; margin-right:auto">🔒 Proyecto bloqueado</span>
-      <button class="btn btn-ghost btn-sm" id="d-cancel">Cerrar</button>
+      <button class="btn btn-ghost btn-sm" data-action="close">Cerrar</button>
     `;
   } else {
     $('#drawer-footer').innerHTML = `
-      <button class="btn btn-ghost btn-sm" id="d-cancel">Cerrar</button>
-      <button class="btn btn-sm" id="d-save">Guardar cambios</button>
+      <button class="btn btn-ghost btn-sm" data-action="close">Cerrar</button>
+      <button class="btn btn-sm" data-action="save">Guardar cambios</button>
     `;
   }
 
-  // Bindings del drawer
-  $('#d-cancel').addEventListener('click', closeDrawer);
+  // Bindings del drawer (los que no son onclick directo)
   if (!p.bloqueado) {
-    $('#d-save').addEventListener('click', guardarDrawer);
-    $('#cfe-add').addEventListener('click', () => agregarComentario('cfe'));
-    $('#gen-add').addEventListener('click', () => agregarComentario('gen'));
+    const cfeAdd = document.getElementById('cfe-add');
+    const genAdd = document.getElementById('gen-add');
+    if (cfeAdd) cfeAdd.onclick = () => agregarComentario('cfe');
+    if (genAdd) genAdd.onclick = () => agregarComentario('gen');
 
     // Cálculo automático de kW = (# paneles × potencia panel) / 1000
     const recalcularKW = () => {
-      const n = parseFloat($('#d-num-paneles').value) || 0;
-      const w = parseFloat($('#d-pot-paneles').value) || 0;
-      if (n > 0 && w > 0) {
-        $('#d-kw-sistema').value = ((n * w) / 1000).toFixed(2);
-      }
+      const np = document.getElementById('d-num-paneles');
+      const pp = document.getElementById('d-pot-paneles');
+      const kw = document.getElementById('d-kw-sistema');
+      if (!np || !pp || !kw) return;
+      const n = parseFloat(np.value) || 0;
+      const w = parseFloat(pp.value) || 0;
+      if (n > 0 && w > 0) kw.value = ((n * w) / 1000).toFixed(2);
     };
-    $('#d-num-paneles').addEventListener('input', recalcularKW);
-    $('#d-pot-paneles').addEventListener('input', recalcularKW);
+    const numP = document.getElementById('d-num-paneles');
+    const potP = document.getElementById('d-pot-paneles');
+    if (numP) numP.oninput = recalcularKW;
+    if (potP) potP.oninput = recalcularKW;
 
-    // Selector de marcas: sincronizar select con input oculto + agregar nuevas
-    bindMarcaSelect('panel', $('#d-marca-paneles'), $('#d-marca-paneles-input'));
-    bindMarcaSelect('inversor', $('#d-marca-inversor'), $('#d-marca-inversor-input'));
+    // Selector de marcas
+    const mP   = document.getElementById('d-marca-paneles');
+    const mPi  = document.getElementById('d-marca-paneles-input');
+    const mI   = document.getElementById('d-marca-inversor');
+    const mIi  = document.getElementById('d-marca-inversor-input');
+    if (mP && mPi) bindMarcaSelect('panel', mP, mPi);
+    if (mI && mIi) bindMarcaSelect('inversor', mI, mIi);
   }
 
   // Cargar bitácoras

@@ -113,7 +113,7 @@ body {
   transition: border-color 0.15s;
 }
 .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
-.field textarea { resize: vertical; min-height: 70px; }
+.field textarea { resize: vertical; min-height: 70px; max-width: 100%; }
 
 .btn {
   background: var(--accent);
@@ -126,6 +126,8 @@ body {
   border-radius: var(--r);
   cursor: pointer;
   transition: background 0.15s;
+  position: relative;
+  z-index: 1;
 }
 .btn:hover { background: var(--accent-2); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -314,7 +316,7 @@ table.tabla {
 }
 .drawer-close:hover { color: var(--ink); }
 
-.drawer-body { flex: 1; overflow-y: auto; padding: 18px 20px; }
+.drawer-body { flex: 1; overflow-y: auto; padding: 18px 20px; position: relative; }
 .drawer-footer {
   border-top: 1px solid var(--line);
   padding: 12px 20px;
@@ -322,7 +324,11 @@ table.tabla {
   gap: 8px;
   justify-content: flex-end;
   background: var(--panel);
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
 }
+.drawer-footer button { position: relative; z-index: 11; }
 
 .section {
   margin-bottom: 26px;
@@ -367,7 +373,7 @@ table.tabla {
 }
 .comentario .meta .autor { color: var(--accent); }
 .comentario-input-row { display: flex; gap: 8px; }
-.comentario-input-row textarea { flex: 1; min-height: 38px; resize: vertical; }
+.comentario-input-row textarea { flex: 1; min-height: 38px; resize: vertical; max-width: 100%; }
 
 .combo-row { display: flex; gap: 6px; }
 .combo-row select { flex: 1; }

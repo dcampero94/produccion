@@ -15,6 +15,7 @@
    Paleta: grafito + acento amarillo solar
    ============================================================ */
 :root {
+  /* Tema oscuro (default) */
   --bg:        #0f1115;
   --panel:    #161922;
   --panel-2: #1d2230;
@@ -25,10 +26,13 @@
   --ink-mute:#6b7390;
   --accent:   #f5c518; /* amarillo solar */
   --accent-2:#ffd84d;
+  --accent-ink: #000;  /* texto sobre acento */
   --ok:       #4ade80;
   --warn:    #fb923c;
   --err:     #f87171;
   --info:     #60a5fa;
+  --shadow:  rgba(0,0,0,0.4);
+  --row-hover: rgba(255,255,255,0.025);
 
   /* Instalación (tonos cálidos) */
   --inst-pendiente:    #6b7390;
@@ -46,6 +50,38 @@
   --r-lg: 10px;
 }
 
+[data-theme="light"] {
+  /* Tema claro estilo Google/Notion */
+  --bg:        #ffffff;
+  --panel:    #ffffff;
+  --panel-2: #f6f7f9;
+  --line:     #e5e7eb;
+  --line-2:  #d1d5db;
+  --ink:       #1f2328;
+  --ink-dim: #4b5563;
+  --ink-mute:#6b7280;
+  --accent:   #f5c518;
+  --accent-2:#eab308;
+  --accent-ink: #000;
+  --ok:       #16a34a;
+  --warn:    #ea580c;
+  --err:     #dc2626;
+  --info:     #2563eb;
+  --shadow:  rgba(15,23,42,0.08);
+  --row-hover: rgba(15,23,42,0.04);
+
+  /* Instalación */
+  --inst-pendiente:    #6b7280;
+  --inst-programada:   #ea580c;
+  --inst-encurso:      #c2410c;
+  --inst-instalada:    #16a34a;
+  /* Trámite */
+  --tra-sin:           #6b7280;
+  --tra-encurso:       #2563eb;
+  --tra-aprobado:      #16a34a;
+  --tra-na:            #9ca3af;
+}
+
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; }
 body {
@@ -55,8 +91,15 @@ body {
   font-size: 14px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.15s, color 0.15s;
 }
 .mono { font-family: 'JetBrains Mono', monospace; }
+
+/* Transición suave al cambiar tema */
+.tabla-wrap, .drawer, .login-card, header.topbar, .filters,
+.field input, .field select, .field textarea, .btn, .estado-pill {
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
 
 /* Hide helpers */
 .hidden { display: none !important; }
@@ -65,7 +108,7 @@ body {
 #login-screen {
   position: fixed; inset: 0;
   display: grid; place-items: center;
-  background: radial-gradient(circle at 30% 20%, #1a1f2e 0%, var(--bg) 60%);
+  background: radial-gradient(circle at 30% 20%, var(--panel-2) 0%, var(--bg) 60%);
   z-index: 1000;
 }
 .login-card {
@@ -74,6 +117,7 @@ body {
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   padding: 28px;
+  box-shadow: 0 8px 32px var(--shadow);
 }
 .login-brand {
   display: flex; align-items: center; gap: 10px;
@@ -102,7 +146,7 @@ body {
 }
 .field input, .field select, .field textarea {
   width: 100%;
-  background: var(--bg);
+  background: var(--panel-2);
   border: 1px solid var(--line);
   color: var(--ink);
   font-family: inherit;
@@ -110,10 +154,15 @@ body {
   padding: 9px 11px;
   border-radius: var(--r);
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, background-color 0.15s;
 }
 .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
 .field textarea { resize: vertical; min-height: 70px; max-width: 100%; }
+.field input[readonly] {
+  background: var(--line) !important;
+  color: var(--ink-dim);
+  cursor: not-allowed;
+}
 
 .btn {
   background: var(--accent);
@@ -173,12 +222,36 @@ header.topbar {
 }
 
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+.theme-toggle {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--ink-dim);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  padding: 0;
+}
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+/* Mostrar solo el ícono apropiado según el tema */
+.theme-toggle .theme-icon-light { display: none; }
+.theme-toggle .theme-icon-dark  { display: block; }
+[data-theme="light"] .theme-toggle .theme-icon-light { display: block; }
+[data-theme="light"] .theme-toggle .theme-icon-dark  { display: none; }
 .user-chip {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   color: var(--ink-dim);
   padding: 4px 10px;
-  background: var(--bg);
+  background: var(--panel-2);
   border: 1px solid var(--line);
   border-radius: var(--r);
 }
@@ -192,7 +265,7 @@ header.topbar {
   flex-wrap: wrap;
 }
 .filters select, .filters input {
-  background: var(--bg);
+  background: var(--panel-2);
   border: 1px solid var(--line);
   color: var(--ink);
   padding: 6px 10px;
@@ -214,7 +287,6 @@ main {
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   overflow: auto;
-  max-height: calc(100vh - 180px);
 }
 table.tabla {
   width: 100%;
@@ -244,7 +316,7 @@ table.tabla {
   font-size: 13px;
 }
 .tabla tr { cursor: pointer; }
-.tabla tr:hover td { background: rgba(255,255,255,0.02); }
+.tabla tr:hover td { background: var(--row-hover); }
 .tabla tr.bloqueado td { color: var(--ink-mute); }
 
 .tabla td.cell-warn { color: var(--warn); font-style: italic; }
@@ -356,7 +428,7 @@ table.tabla {
   padding-right: 4px;
 }
 .comentario {
-  background: var(--bg);
+  background: var(--panel-2);
   border: 1px solid var(--line);
   border-radius: var(--r);
   padding: 8px 10px;
@@ -449,6 +521,10 @@ table.tabla {
     </div>
 
     <div class="topbar-right">
+      <button class="theme-toggle" id="theme-toggle" title="Cambiar tema">
+        <span class="theme-icon-dark">☾</span>
+        <span class="theme-icon-light">☼</span>
+      </button>
       <div class="user-chip" id="user-chip">—</div>
       <button class="btn btn-ghost btn-sm" id="logout">Salir</button>
     </div>
@@ -523,7 +599,7 @@ table.tabla {
    CONFIG
    ============================================================ */
 const SUPABASE_URL  = 'https://lernzlbzrgatqkadwhas.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxlcm56bGJ6cmdhdHFrYWR3aGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxODgwMzgsImV4cCI6MjA5Mzc2NDAzOH0.G4AWdtTdxew0_EHGeHx28ijwHJOuyuXyVG0KbR-J8k4'; // ← Reemplazar con la misma anon key del CRM viejo
+const SUPABASE_ANON = 'PEGAR_AQUI_LA_ANON_KEY'; // ← Reemplazar con la misma anon key del CRM viejo
 
 // Usuarios V1 — definir contraseñas reales antes de desplegar
 const USERS = {
@@ -572,6 +648,14 @@ $('#logout').addEventListener('click', () => {
   location.reload();
 });
 
+// Tema claro/oscuro
+function aplicarTema(tema) {
+  document.documentElement.setAttribute('data-theme', tema);
+  localStorage.setItem('crmp_theme', tema);
+}
+// Aplicar tema guardado al cargar (antes de mostrar nada)
+aplicarTema(localStorage.getItem('crmp_theme') || 'dark');
+
 // Auto-login si hay sesión
 const saved = localStorage.getItem('crmp_user');
 if (saved && USERS[saved]) {
@@ -592,6 +676,12 @@ function startApp() {
    UI BINDINGS
    ============================================================ */
 function bindUI() {
+  // Toggle de tema
+  $('#theme-toggle').addEventListener('click', () => {
+    const actual = document.documentElement.getAttribute('data-theme') || 'dark';
+    aplicarTema(actual === 'dark' ? 'light' : 'dark');
+  });
+
   // Filtros
   ['f-inst', 'f-tramite', 'f-cuadrilla', 'f-busqueda'].forEach(id => {
     $('#' + id).addEventListener('input', render);

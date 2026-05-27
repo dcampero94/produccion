@@ -574,6 +574,7 @@ table.tabla {
             <th data-sort="fecha_terminacion">Terminación</th>
             <th data-sort="siresi">SIRESI</th>
             <th data-sort="asesor_original">Asesor</th>
+            <th data-sort="actualizado_en">Actualizado</th>
           </tr>
         </thead>
         <tbody id="tabla-body"></tbody>
@@ -624,7 +625,7 @@ const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 let currentUser = null;
 let proyectos   = [];
 let currentDrawerId = null;
-let sortState   = { field: 'cotizacion_num', dir: 'desc' };
+let sortState   = { field: 'actualizado_en', dir: 'desc' };
 
 /* ============================================================
    LOGIN
@@ -743,7 +744,7 @@ async function loadProyectos() {
   const { data, error } = await supa
     .from('proyectos')
     .select('*')
-    .order('creado_en', { ascending: false });
+    .order('actualizado_en', { ascending: false });
   if (error) {
     toast('Error cargando proyectos: ' + error.message, 'err');
     return;
@@ -874,7 +875,7 @@ function actualizarHeadersSort() {
 function renderTabla(lista) {
   const body = $('#tabla-body');
   if (lista.length === 0) {
-    body.innerHTML = `<tr><td colspan="10"><div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div></td></tr>`;
+    body.innerHTML = `<tr><td colspan="11"><div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div></td></tr>`;
     return;
   }
   body.innerHTML = lista.map(p => {
@@ -896,6 +897,7 @@ function renderTabla(lista) {
       <td class="mono">${fmtFecha(p.fecha_terminacion)}</td>
       <td class="mono">${escapeHtml(p.siresi || '—')}</td>
       <td>${escapeHtml(p.asesor_original || '—')}</td>
+      <td class="mono" style="font-size:11px; color:var(--ink-mute)">${fmtRelativo(p.actualizado_en)}</td>
     </tr>`;
   }).join('');
 }
@@ -1262,6 +1264,21 @@ function fmtFechaHora(ts) {
   const d = new Date(ts);
   return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) + ' · ' +
          d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+}
+function fmtRelativo(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  const ahora = new Date();
+  const diffMs = ahora - d;
+  const minutos = Math.floor(diffMs / 60000);
+  const horas   = Math.floor(diffMs / 3600000);
+  const dias    = Math.floor(diffMs / 86400000);
+  if (minutos < 1)  return 'ahora';
+  if (minutos < 60) return `hace ${minutos} min`;
+  if (horas < 24)   return `hace ${horas} h`;
+  if (dias < 7)     return `hace ${dias} día${dias > 1 ? 's' : ''}`;
+  if (dias < 30)    return `hace ${Math.floor(dias/7)} sem`;
+  return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: '2-digit' });
 }
 function escapeHtml(s) {
   if (s == null) return '';

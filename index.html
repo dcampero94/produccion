@@ -1204,7 +1204,7 @@ async function openDrawer(id) {
       <h3>Estado del proyecto</h3>
       <div class="grid-2">
         <div class="field"><label>Instalación</label>
-          <select data-field="estado_instalacion" ${ro}>${instSelect}</select>
+          <select data-field="estado_instalacion" id="d-estado-inst" ${ro}>${instSelect}</select>
         </div>
         <div class="field"><label>Trámite CFE</label>
           <select data-field="estado_tramite" ${ro}>${traSelect}</select>
@@ -1224,9 +1224,9 @@ async function openDrawer(id) {
         <div class="field"></div>
       </div>
       <div class="grid-3">
-        <div class="field"><label>Programada</label><input type="date" value="${p.fecha_programada_instalacion || ''}" data-field="fecha_programada_instalacion" ${ro}></div>
-        <div class="field"><label>Inicio real</label><input type="date" value="${p.fecha_inicio_instalacion || ''}" data-field="fecha_inicio_instalacion" ${ro}></div>
-        <div class="field"><label>Terminación</label><input type="date" value="${p.fecha_terminacion || ''}" data-field="fecha_terminacion" ${ro}></div>
+        <div class="field"><label>Programada</label><input type="date" value="${p.fecha_programada_instalacion || ''}" data-field="fecha_programada_instalacion" id="d-fecha-prog" ${ro}></div>
+        <div class="field"><label>Inicio real</label><input type="date" value="${p.fecha_inicio_instalacion || ''}" data-field="fecha_inicio_instalacion" id="d-fecha-inicio" ${ro}></div>
+        <div class="field"><label>Terminación</label><input type="date" value="${p.fecha_terminacion || ''}" data-field="fecha_terminacion" id="d-fecha-term" ${ro}></div>
       </div>
     </div>
 
@@ -1363,6 +1363,52 @@ async function openDrawer(id) {
     const mIi  = document.getElementById('d-marca-inversor-input');
     if (mP && mPi) bindMarcaSelect('panel', mP, mPi);
     if (mI && mIi) bindMarcaSelect('inversor', mI, mIi);
+
+    // Sincronización estado de instalación ↔ fechas
+    const estadoInst = document.getElementById('d-estado-inst');
+    const fProg      = document.getElementById('d-fecha-prog');
+    const fInicio    = document.getElementById('d-fecha-inicio');
+    const fTerm      = document.getElementById('d-fecha-term');
+    const hoyStr = () => new Date().toISOString().slice(0, 10);
+
+    // Cuando se cambia el estado, autocompletar fechas si faltan
+    if (estadoInst) estadoInst.addEventListener('change', () => {
+      const nuevo = estadoInst.value;
+      if (nuevo === 'En instalación' && fInicio && !fInicio.value) {
+        fInicio.value = hoyStr();
+      }
+      if (nuevo === 'Instalada' && fTerm && !fTerm.value) {
+        fTerm.value = hoyStr();
+        // Si tampoco hay fecha de inicio, ponerla también (en una sola sesión instalaron y terminaron)
+        if (fInicio && !fInicio.value) fInicio.value = hoyStr();
+      }
+    });
+
+    // Cuando se cambia una fecha, autocompletar el estado si está atrasado
+    if (fInicio) fInicio.addEventListener('change', () => {
+      if (!fInicio.value || !estadoInst) return;
+      const actual = estadoInst.value;
+      // Avanzar el estado si todavía está en una etapa anterior
+      if (actual === 'Pendiente' || actual === 'Programada') {
+        estadoInst.value = 'En instalación';
+      }
+    });
+
+    if (fTerm) fTerm.addEventListener('change', () => {
+      if (!fTerm.value || !estadoInst) return;
+      const actual = estadoInst.value;
+      if (actual === 'Pendiente' || actual === 'Programada' || actual === 'En instalación') {
+        estadoInst.value = 'Instalada';
+      }
+    });
+
+    if (fProg) fProg.addEventListener('change', () => {
+      if (!fProg.value || !estadoInst) return;
+      // Solo avanzar de Pendiente a Programada; no degradar de En instalación
+      if (estadoInst.value === 'Pendiente') {
+        estadoInst.value = 'Programada';
+      }
+    });
   }
 
   // Cargar bitácoras
@@ -1538,17 +1584,6 @@ function toast(msg, kind = 'ok') {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
 }
-</script>
-</body>
-</html>
-
-
-
-
-
-
-
-
 </script>
 </body>
 </html>

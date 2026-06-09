@@ -194,7 +194,7 @@ body {
 /* ============================================================ APP SHELL */
 #app {
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto auto 1fr;
   height: 100vh;
 }
 
@@ -274,6 +274,47 @@ header.topbar {
   font-size: 13px;
 }
 .filter-label { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* ============================================================ TABS */
+.tabs-bar {
+  display: flex;
+  gap: 2px;
+  padding: 0 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  align-items: flex-end;
+}
+.tab {
+  background: transparent;
+  border: none;
+  color: var(--ink-mute);
+  padding: 11px 18px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab:hover { color: var(--ink-dim); }
+.tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+/* ============================================================ URGENCIA */
+.urg-dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+.urg-rojo     { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.5); }
+.urg-amarillo { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.4); }
+.urg-verde    { background: #4ade80; }
+.urg-gris     { background: var(--ink-mute); opacity: 0.4; }
+.urg-cell { width: 28px; text-align: center; padding-left: 14px !important; padding-right: 4px !important; }
 
 /* ============================================================ MAIN AREA */
 main {
@@ -532,7 +573,13 @@ table.tabla {
     </div>
   </header>
 
-  <div class="filters">
+  <div class="tabs-bar">
+    <button class="tab active" data-tab="instalacion">Instalación</button>
+    <button class="tab" data-tab="tramite">Trámite CFE</button>
+  </div>
+
+  <!-- ============ TAB INSTALACIÓN ============ -->
+  <div class="filters" data-tab-content="instalacion">
     <span class="filter-label">Filtrar</span>
     <select id="f-inst">
       <option value="">Instalación: todos</option>
@@ -540,13 +587,6 @@ table.tabla {
       <option>Programada</option>
       <option>En instalación</option>
       <option>Instalada</option>
-    </select>
-    <select id="f-tramite">
-      <option value="">Trámite: todos</option>
-      <option>Sin iniciar</option>
-      <option>En trámite</option>
-      <option>Aprobado</option>
-      <option>N/A</option>
     </select>
     <select id="f-cuadrilla">
       <option value="">Todas las cuadrillas</option>
@@ -556,28 +596,67 @@ table.tabla {
       <option>Otro</option>
       <option value="__sin">Sin asignar</option>
     </select>
+    <select id="f-urgencia">
+      <option value="">Todas las urgencias</option>
+      <option value="urgentes">Solo urgentes (🔴+🟡)</option>
+      <option value="rojo">🔴 Atrasados</option>
+      <option value="amarillo">🟡 Por atender</option>
+      <option value="verde">🟢 En orden</option>
+    </select>
     <input id="f-busqueda" placeholder="Buscar cliente…" style="min-width:200px">
   </div>
 
-  <main>
+  <main data-tab-content="instalacion">
+    <div class="tabla-wrap">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th></th>
+            <th data-sort="cotizacion_num">#</th>
+            <th data-sort="cliente_nombre">Cliente</th>
+            <th data-sort="estado_instalacion">Estado</th>
+            <th data-sort="cuadrilla">Cuadrilla</th>
+            <th data-sort="kw_sistema">kW</th>
+            <th data-sort="fecha_programada_instalacion">Programada</th>
+            <th data-sort="fecha_inicio_instalacion">Inicio</th>
+            <th data-sort="fecha_terminacion">Terminación</th>
+            <th data-sort="asesor_original">Asesor</th>
+            <th data-sort="actualizado_en">Actualizado</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body-inst"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- ============ TAB TRÁMITE CFE ============ -->
+  <div class="filters hidden" data-tab-content="tramite">
+    <span class="filter-label">Filtrar</span>
+    <select id="f-tramite">
+      <option value="">Trámite: todos</option>
+      <option>Sin iniciar</option>
+      <option>En trámite</option>
+      <option>Aprobado</option>
+      <option>N/A</option>
+    </select>
+    <input id="f-busqueda-t" placeholder="Buscar cliente o SIRESI…" style="min-width:240px">
+  </div>
+
+  <main class="hidden" data-tab-content="tramite">
     <div class="tabla-wrap">
       <table class="tabla">
         <thead>
           <tr>
             <th data-sort="cotizacion_num">#</th>
             <th data-sort="cliente_nombre">Cliente</th>
-            <th data-sort="estado_instalacion">Instalación</th>
-            <th data-sort="estado_tramite">Trámite CFE</th>
-            <th data-sort="cuadrilla">Cuadrilla</th>
-            <th data-sort="kw_sistema">kW</th>
-            <th data-sort="fecha_programada_instalacion">Programada</th>
-            <th data-sort="fecha_terminacion">Terminación</th>
+            <th data-sort="estado_tramite">Estado trámite</th>
             <th data-sort="siresi">SIRESI</th>
             <th data-sort="asesor_original">Asesor</th>
+            <th data-sort="fecha_venta">Días desde venta</th>
             <th data-sort="actualizado_en">Actualizado</th>
           </tr>
         </thead>
-        <tbody id="tabla-body"></tbody>
+        <tbody id="tabla-body-tra"></tbody>
       </table>
     </div>
   </main>
@@ -626,6 +705,7 @@ let currentUser = null;
 let proyectos   = [];
 let currentDrawerId = null;
 let sortState   = { field: 'actualizado_en', dir: 'desc' };
+let currentTab  = 'instalacion';
 
 /* ============================================================
    LOGIN
@@ -685,18 +765,32 @@ function bindUI() {
     aplicarTema(actual === 'dark' ? 'light' : 'dark');
   });
 
-  // Filtros
-  ['f-inst', 'f-tramite', 'f-cuadrilla', 'f-busqueda'].forEach(id => {
-    $('#' + id).addEventListener('input', render);
+  // Tabs
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  // Click en cualquier fila (delegación: sobrevive a re-renders)
-  $('#tabla-body').addEventListener('click', (e) => {
-    const tr = e.target.closest('tr[data-id]');
-    if (tr) openDrawer(parseInt(tr.dataset.id));
+  // Filtros Instalación
+  ['f-inst', 'f-cuadrilla', 'f-urgencia', 'f-busqueda'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', render);
+  });
+  // Filtros Trámite
+  ['f-tramite', 'f-busqueda-t'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', render);
   });
 
-  // Footer del drawer (delegación: los botones se crean dinámicamente)
+  // Click en filas de ambas tablas (delegación)
+  ['tabla-body-inst', 'tabla-body-tra'].forEach(id => {
+    const tb = document.getElementById(id);
+    if (tb) tb.addEventListener('click', (e) => {
+      const tr = e.target.closest('tr[data-id]');
+      if (tr) openDrawer(parseInt(tr.dataset.id));
+    });
+  });
+
+  // Footer del drawer (delegación)
   $('#drawer-footer').addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
@@ -820,18 +914,136 @@ async function agregarAlCatalogo(tipo, marca, potencia) {
 }
 
 /* ============================================================
+   TABS
+   ============================================================ */
+function switchTab(tab) {
+  currentTab = tab;
+  // Activar visualmente el botón del tab
+  document.querySelectorAll('.tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  // Mostrar/ocultar filtros y main del tab correspondiente
+  document.querySelectorAll('[data-tab-content]').forEach(el => {
+    el.classList.toggle('hidden', el.dataset.tabContent !== tab);
+  });
+  render();
+}
+
+/* ============================================================
+   URGENCIA (Instalación)
+   ============================================================ */
+// Devuelve 'rojo' | 'amarillo' | 'verde' | 'gris' según los SLAs definidos
+function calcularUrgenciaInst(p) {
+  if (!p) return 'gris';
+  const estado = p.estado_instalacion;
+  if (estado === 'Instalada') return 'gris';   // cerrado, no urgente
+
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const diasDesde = (fecha) => {
+    if (!fecha) return null;
+    const d = new Date(fecha + (fecha.length === 10 ? 'T00:00:00' : ''));
+    return Math.floor((hoy - d) / 86400000);
+  };
+  const diasHasta = (fecha) => {
+    if (!fecha) return null;
+    const d = new Date(fecha + (fecha.length === 10 ? 'T00:00:00' : ''));
+    return Math.floor((d - hoy) / 86400000);
+  };
+
+  // Regla 4: En instalación prolongada
+  if (estado === 'En instalación') {
+    const dias = diasDesde(p.fecha_inicio_instalacion);
+    if (dias !== null) {
+      if (dias >= 5) return 'rojo';
+      if (dias >= 3) return 'amarillo';
+      return 'verde';
+    }
+    return 'amarillo'; // En instalación sin fecha de inicio: raro, vale amarillo
+  }
+
+  // Regla 3: Programada / atrasada
+  if (estado === 'Programada') {
+    const dias = diasHasta(p.fecha_programada_instalacion);
+    if (dias !== null) {
+      if (dias < 0)  return 'rojo';     // fecha pasó
+      if (dias <= 2) return 'amarillo'; // hoy, mañana o pasado
+      return 'verde';
+    }
+  }
+
+  // Reglas 1 y 2: Pendiente (con o sin cuadrilla, con o sin fecha)
+  if (estado === 'Pendiente') {
+    const diasDesdeVenta = diasDesde(p.fecha_venta);
+    const tieneCuadrilla = !!p.cuadrilla;
+    const tieneFecha     = !!p.fecha_programada_instalacion;
+
+    if (!tieneCuadrilla) {
+      // Regla 1
+      if (diasDesdeVenta !== null) {
+        if (diasDesdeVenta > 7)  return 'rojo';
+        if (diasDesdeVenta >= 4) return 'amarillo';
+        return 'verde';
+      }
+      return 'verde';
+    }
+    if (!tieneFecha) {
+      // Regla 2: tiene cuadrilla pero sin fecha programada
+      // Tomamos como referencia diasDesde(actualizado_en) en lugar de venta
+      // porque puede que la cuadrilla se asignó recientemente
+      const diasDesdeAct = Math.floor((Date.now() - new Date(p.actualizado_en)) / 86400000);
+      if (diasDesdeAct > 10) return 'rojo';
+      if (diasDesdeAct >= 4) return 'amarillo';
+      return 'verde';
+    }
+    // Tiene cuadrilla y fecha pero está en "Pendiente" (raro, debería haberse marcado Programada)
+    return 'amarillo';
+  }
+
+  return 'gris';
+}
+
+function urgIcono(nivel) {
+  return `<span class="urg-dot urg-${nivel}" title="${urgTitulo(nivel)}"></span>`;
+}
+function urgTitulo(nivel) {
+  return {
+    'rojo':     'Atrasado · requiere atención inmediata',
+    'amarillo': 'Por atender pronto',
+    'verde':    'En orden',
+    'gris':     'No aplica / cerrado'
+  }[nivel] || '';
+}
+
+/* ============================================================
    FILTROS
    ============================================================ */
-function aplicarFiltros(lista) {
-  const fInst = $('#f-inst').value;
-  const fTra  = $('#f-tramite').value;
-  const fCua  = $('#f-cuadrilla').value;
-  const fBus  = $('#f-busqueda').value.trim().toLowerCase();
+function aplicarFiltrosInstalacion(lista) {
+  const fInst = document.getElementById('f-inst')?.value || '';
+  const fCua  = document.getElementById('f-cuadrilla')?.value || '';
+  const fUrg  = document.getElementById('f-urgencia')?.value || '';
+  const fBus  = (document.getElementById('f-busqueda')?.value || '').trim().toLowerCase();
   return lista.filter(p => {
     if (fInst && p.estado_instalacion !== fInst) return false;
-    if (fTra  && p.estado_tramite     !== fTra)  return false;
     if (fCua === '__sin') { if (p.cuadrilla) return false; }
     else if (fCua && p.cuadrilla !== fCua) return false;
+    if (fUrg) {
+      const u = calcularUrgenciaInst(p);
+      if (fUrg === 'urgentes' && !(u === 'rojo' || u === 'amarillo')) return false;
+      else if (fUrg !== 'urgentes' && u !== fUrg) return false;
+    }
+    if (fBus) {
+      const blob = `${p.cliente_nombre||''} ${p.asesor_original||''}`.toLowerCase();
+      if (!blob.includes(fBus)) return false;
+    }
+    return true;
+  });
+}
+
+function aplicarFiltrosTramite(lista) {
+  const fTra = document.getElementById('f-tramite')?.value || '';
+  const fBus = (document.getElementById('f-busqueda-t')?.value || '').trim().toLowerCase();
+  return lista.filter(p => {
+    if (fTra && p.estado_tramite !== fTra) return false;
     if (fBus) {
       const blob = `${p.cliente_nombre||''} ${p.asesor_original||''} ${p.siresi||''}`.toLowerCase();
       if (!blob.includes(fBus)) return false;
@@ -844,9 +1056,15 @@ function aplicarFiltros(lista) {
    RENDER
    ============================================================ */
 function render() {
-  const filtrados = aplicarFiltros(proyectos);
-  ordenar(filtrados);
-  renderTabla(filtrados);
+  if (currentTab === 'instalacion') {
+    const filtrados = aplicarFiltrosInstalacion(proyectos);
+    ordenar(filtrados);
+    renderTablaInstalacion(filtrados);
+  } else {
+    const filtrados = aplicarFiltrosTramite(proyectos);
+    ordenar(filtrados);
+    renderTablaTramite(filtrados);
+  }
   actualizarHeadersSort();
 }
 
@@ -856,7 +1074,7 @@ function ordenar(lista) {
   lista.sort((a, b) => {
     let va = a[field], vb = b[field];
     if (va == null && vb == null) return 0;
-    if (va == null) return 1;   // nulls al final siempre
+    if (va == null) return 1;
     if (vb == null) return -1;
     if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * mult;
     return String(va).localeCompare(String(vb), 'es') * mult;
@@ -872,8 +1090,8 @@ function actualizarHeadersSort() {
   });
 }
 
-function renderTabla(lista) {
-  const body = $('#tabla-body');
+function renderTablaInstalacion(lista) {
+  const body = $('#tabla-body-inst');
   if (lista.length === 0) {
     body.innerHTML = `<tr><td colspan="11"><div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div></td></tr>`;
     return;
@@ -886,17 +1104,40 @@ function renderTabla(lista) {
     const fechaCell = p.fecha_programada_instalacion
       ? `<td class="mono">${fmtFecha(p.fecha_programada_instalacion)}</td>`
       : `<td class="cell-warn mono">Sin fecha</td>`;
+    const urg = calcularUrgenciaInst(p);
     return `<tr class="${p.bloqueado ? 'bloqueado' : ''}" data-id="${p.id}">
+      <td class="urg-cell">${urgIcono(urg)}</td>
       <td class="mono" style="color:var(--ink-mute)">${p.cotizacion_num ? '#' + p.cotizacion_num : '—'}</td>
       <td>${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}</td>
       <td><span class="estado-pill ${classInst(p.estado_instalacion)}">${p.estado_instalacion || '—'}</span></td>
-      <td><span class="estado-pill ${classTra(p.estado_tramite)}">${p.estado_tramite || '—'}</span></td>
       ${cuadrillaCell}
       <td class="mono">${p.kw_sistema ? p.kw_sistema + ' kW' : '—'}</td>
       ${fechaCell}
+      <td class="mono">${fmtFecha(p.fecha_inicio_instalacion)}</td>
       <td class="mono">${fmtFecha(p.fecha_terminacion)}</td>
+      <td>${escapeHtml(p.asesor_original || '—')}</td>
+      <td class="mono" style="font-size:11px; color:var(--ink-mute)">${fmtRelativo(p.actualizado_en)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderTablaTramite(lista) {
+  const body = $('#tabla-body-tra');
+  if (lista.length === 0) {
+    body.innerHTML = `<tr><td colspan="7"><div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div></td></tr>`;
+    return;
+  }
+  body.innerHTML = lista.map(p => {
+    const diasVenta = p.fecha_venta
+      ? Math.floor((Date.now() - new Date(p.fecha_venta + 'T00:00:00')) / 86400000)
+      : null;
+    return `<tr class="${p.bloqueado ? 'bloqueado' : ''}" data-id="${p.id}">
+      <td class="mono" style="color:var(--ink-mute)">${p.cotizacion_num ? '#' + p.cotizacion_num : '—'}</td>
+      <td>${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}</td>
+      <td><span class="estado-pill ${classTra(p.estado_tramite)}">${p.estado_tramite || '—'}</span></td>
       <td class="mono">${escapeHtml(p.siresi || '—')}</td>
       <td>${escapeHtml(p.asesor_original || '—')}</td>
+      <td class="mono">${diasVenta !== null ? diasVenta + ' días' : '—'}</td>
       <td class="mono" style="font-size:11px; color:var(--ink-mute)">${fmtRelativo(p.actualizado_en)}</td>
     </tr>`;
   }).join('');

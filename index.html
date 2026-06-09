@@ -1709,11 +1709,15 @@ async function openDrawer(id) {
       const nuevo = estadoInst.value;
       if (nuevo === 'En instalación' && fInicio && !fInicio.value) {
         fInicio.value = hoyStr();
+        // Si tampoco había fecha programada, usar la misma (la instalación arrancó sin haberse programado formalmente)
+        if (fProg && !fProg.value) fProg.value = fInicio.value;
       }
       if (nuevo === 'Instalada' && fTerm && !fTerm.value) {
         fTerm.value = hoyStr();
         // Si tampoco hay fecha de inicio, ponerla también (en una sola sesión instalaron y terminaron)
         if (fInicio && !fInicio.value) fInicio.value = hoyStr();
+        // Y si tampoco había fecha programada, usar la misma
+        if (fProg && !fProg.value) fProg.value = fTerm.value;
       }
     });
 
@@ -1725,6 +1729,8 @@ async function openDrawer(id) {
       if (actual === 'Pendiente' || actual === 'Programada') {
         estadoInst.value = 'En instalación';
       }
+      // Si no había fecha programada, copiarla del inicio
+      if (fProg && !fProg.value) fProg.value = fInicio.value;
     });
 
     if (fTerm) fTerm.addEventListener('change', () => {
@@ -1733,6 +1739,10 @@ async function openDrawer(id) {
       if (actual === 'Pendiente' || actual === 'Programada' || actual === 'En instalación') {
         estadoInst.value = 'Instalada';
       }
+      // Si no había fecha programada, usar la terminación como referencia
+      if (fProg && !fProg.value) fProg.value = fTerm.value;
+      // Y si no había fecha de inicio, también
+      if (fInicio && !fInicio.value) fInicio.value = fTerm.value;
     });
 
     if (fProg) fProg.addEventListener('change', () => {

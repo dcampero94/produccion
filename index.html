@@ -1043,6 +1043,9 @@ function aplicarFiltrosTramite(lista) {
   const fTra = document.getElementById('f-tramite')?.value || '';
   const fBus = (document.getElementById('f-busqueda-t')?.value || '').trim().toLowerCase();
   return lista.filter(p => {
+    // Por default, excluir los N/A (proyectos que no requieren trámite con CFE).
+    // Solo se ven si el usuario explícitamente filtra por "N/A".
+    if (fTra !== 'N/A' && p.estado_tramite === 'N/A') return false;
     if (fTra && p.estado_tramite !== fTra) return false;
     if (fBus) {
       const blob = `${p.cliente_nombre||''} ${p.asesor_original||''} ${p.siresi||''}`.toLowerCase();
@@ -1535,6 +1538,17 @@ function toast(msg, kind = 'ok') {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
 }
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
 </script>
 </body>
 </html>

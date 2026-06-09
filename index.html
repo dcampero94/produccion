@@ -316,6 +316,156 @@ header.topbar {
 .urg-gris     { background: var(--ink-mute); opacity: 0.4; }
 .urg-cell { width: 28px; text-align: center; padding-left: 14px !important; padding-right: 4px !important; }
 
+/* ============================================================ VISTA DE COLA (Pendientes) */
+.cola-main {
+  padding: 16px 20px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cola-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.cola-col {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+}
+.cola-col-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-2);
+}
+.cola-col-title {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-dim);
+  flex: 1;
+}
+.cola-col-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--bg);
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-weight: 600;
+}
+.cola-col[data-zona="rojo"] .cola-col-count     { color: #ef4444; border-color: #ef4444; }
+.cola-col[data-zona="amarillo"] .cola-col-count { color: #f59e0b; border-color: #f59e0b; }
+.cola-col[data-zona="verde"] .cola-col-count    { color: #4ade80; border-color: #4ade80; }
+.cola-col-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 100px;
+}
+.cola-card {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line-2);
+  border-radius: var(--r);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background-color 0.12s, border-color 0.12s;
+}
+.cola-card:hover {
+  background: var(--bg);
+  border-left-color: var(--accent);
+}
+.cola-col[data-zona="rojo"]     .cola-card { border-left-color: #ef4444; }
+.cola-col[data-zona="amarillo"] .cola-card { border-left-color: #f59e0b; }
+.cola-col[data-zona="verde"]    .cola-card { border-left-color: #4ade80; }
+.cola-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.cola-card-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-mute);
+}
+.cola-card-cliente {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--ink);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cola-card-meta {
+  font-size: 11px;
+  color: var(--ink-dim);
+  line-height: 1.5;
+}
+.cola-card-meta .alerta {
+  color: var(--warn);
+  font-weight: 500;
+}
+.cola-card-meta .alerta-roja {
+  color: #ef4444;
+  font-weight: 600;
+}
+.cola-empty {
+  text-align: center;
+  color: var(--ink-mute);
+  font-size: 12px;
+  padding: 20px 10px;
+  font-style: italic;
+}
+
+.cola-metricas {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+.metrica {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 14px;
+  border-right: 1px solid var(--line);
+}
+.metrica:last-child { border-right: none; }
+.metrica-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.metrica-label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+@media (max-width: 960px) {
+  .cola-wrap { grid-template-columns: 1fr; }
+}
+
 /* ============================================================ MAIN AREA */
 main {
   overflow: auto;
@@ -574,12 +724,44 @@ table.tabla {
   </header>
 
   <div class="tabs-bar">
-    <button class="tab active" data-tab="instalacion">Instalación</button>
+    <button class="tab active" data-tab="pendientes">Pendientes</button>
+    <button class="tab" data-tab="instalacion">Instalación</button>
     <button class="tab" data-tab="tramite">Trámite CFE</button>
   </div>
 
+  <!-- ============ TAB PENDIENTES (Vista de Cola) ============ -->
+  <main class="cola-main" data-tab-content="pendientes">
+    <div class="cola-wrap">
+      <div class="cola-col" data-zona="rojo">
+        <div class="cola-col-header">
+          <span class="urg-dot urg-rojo"></span>
+          <span class="cola-col-title">Atrasados</span>
+          <span class="cola-col-count" id="cnt-rojo">0</span>
+        </div>
+        <div class="cola-col-body" id="cola-rojo"></div>
+      </div>
+      <div class="cola-col" data-zona="amarillo">
+        <div class="cola-col-header">
+          <span class="urg-dot urg-amarillo"></span>
+          <span class="cola-col-title">Por atender</span>
+          <span class="cola-col-count" id="cnt-amarillo">0</span>
+        </div>
+        <div class="cola-col-body" id="cola-amarillo"></div>
+      </div>
+      <div class="cola-col" data-zona="verde">
+        <div class="cola-col-header">
+          <span class="urg-dot urg-verde"></span>
+          <span class="cola-col-title">Esta semana</span>
+          <span class="cola-col-count" id="cnt-verde">0</span>
+        </div>
+        <div class="cola-col-body" id="cola-verde"></div>
+      </div>
+    </div>
+    <div class="cola-metricas" id="cola-metricas"></div>
+  </main>
+
   <!-- ============ TAB INSTALACIÓN ============ -->
-  <div class="filters" data-tab-content="instalacion">
+  <div class="filters hidden" data-tab-content="instalacion">
     <span class="filter-label">Filtrar</span>
     <select id="f-inst">
       <option value="">Instalación: todos</option>
@@ -606,7 +788,7 @@ table.tabla {
     <input id="f-busqueda" placeholder="Buscar cliente…" style="min-width:200px">
   </div>
 
-  <main data-tab-content="instalacion">
+  <main class="hidden" data-tab-content="instalacion">
     <div class="tabla-wrap">
       <table class="tabla">
         <thead>
@@ -705,7 +887,7 @@ let currentUser = null;
 let proyectos   = [];
 let currentDrawerId = null;
 let sortState   = { field: 'actualizado_en', dir: 'desc' };
-let currentTab  = 'instalacion';
+let currentTab  = 'pendientes';
 
 /* ============================================================
    LOGIN
@@ -787,6 +969,15 @@ function bindUI() {
     if (tb) tb.addEventListener('click', (e) => {
       const tr = e.target.closest('tr[data-id]');
       if (tr) openDrawer(parseInt(tr.dataset.id));
+    });
+  });
+
+  // Click en cartas de la cola (delegación)
+  ['cola-rojo', 'cola-amarillo', 'cola-verde'].forEach(id => {
+    const col = document.getElementById(id);
+    if (col) col.addEventListener('click', (e) => {
+      const card = e.target.closest('.cola-card[data-id]');
+      if (card) openDrawer(parseInt(card.dataset.id));
     });
   });
 
@@ -938,18 +1129,6 @@ function calcularUrgenciaInst(p) {
   const estado = p.estado_instalacion;
   if (estado === 'Instalada') return 'gris';   // cerrado, no urgente
 
-  const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const diasDesde = (fecha) => {
-    if (!fecha) return null;
-    const d = new Date(fecha + (fecha.length === 10 ? 'T00:00:00' : ''));
-    return Math.floor((hoy - d) / 86400000);
-  };
-  const diasHasta = (fecha) => {
-    if (!fecha) return null;
-    const d = new Date(fecha + (fecha.length === 10 ? 'T00:00:00' : ''));
-    return Math.floor((d - hoy) / 86400000);
-  };
-
   // Regla 4: En instalación prolongada
   if (estado === 'En instalación') {
     const dias = diasDesde(p.fecha_inicio_instalacion);
@@ -1059,7 +1238,9 @@ function aplicarFiltrosTramite(lista) {
    RENDER
    ============================================================ */
 function render() {
-  if (currentTab === 'instalacion') {
+  if (currentTab === 'pendientes') {
+    renderCola();
+  } else if (currentTab === 'instalacion') {
     const filtrados = aplicarFiltrosInstalacion(proyectos);
     ordenar(filtrados);
     renderTablaInstalacion(filtrados);
@@ -1069,6 +1250,153 @@ function render() {
     renderTablaTramite(filtrados);
   }
   actualizarHeadersSort();
+}
+
+/* ============================================================
+   VISTA DE COLA (tab Pendientes)
+   ============================================================ */
+function renderCola() {
+  // Activos: excluimos los bloqueados y los ya Instalados (cerrados)
+  const activos = proyectos.filter(p => !p.bloqueado && p.estado_instalacion !== 'Instalada');
+
+  const rojos     = [];
+  const amarillos = [];
+  const verdes    = [];
+
+  activos.forEach(p => {
+    const u = calcularUrgenciaInst(p);
+    if (u === 'rojo')     rojos.push(p);
+    else if (u === 'amarillo') amarillos.push(p);
+    else if (u === 'verde')    {
+      // En zona verde: solo mostrar los que tienen instalación programada para los próximos 7 días
+      if (p.fecha_programada_instalacion) {
+        const dias = diasHasta(p.fecha_programada_instalacion);
+        if (dias !== null && dias >= 0 && dias <= 7) verdes.push(p);
+      }
+    }
+  });
+
+  // Ordenar cada bloque por urgencia interna (más viejos primero en rojos/amarillos, más cercanos en verdes)
+  rojos.sort((a, b) => fechaRef(a) - fechaRef(b));
+  amarillos.sort((a, b) => fechaRef(a) - fechaRef(b));
+  verdes.sort((a, b) => parseFecha(a.fecha_programada_instalacion) - parseFecha(b.fecha_programada_instalacion));
+
+  pintarColumnaCola('cola-rojo',     'cnt-rojo',     rojos,     'rojo');
+  pintarColumnaCola('cola-amarillo', 'cnt-amarillo', amarillos, 'amarillo');
+  pintarColumnaCola('cola-verde',    'cnt-verde',    verdes,    'verde');
+
+  renderMetricas();
+}
+
+function fechaRef(p) {
+  // Fecha de referencia para ordenar dentro de una zona: la más vieja primero
+  if (p.fecha_inicio_instalacion) return parseFecha(p.fecha_inicio_instalacion);
+  if (p.fecha_programada_instalacion) return parseFecha(p.fecha_programada_instalacion);
+  if (p.fecha_venta) return parseFecha(p.fecha_venta);
+  return new Date(p.creado_en);
+}
+
+function diasHasta(fecha) {
+  if (!fecha) return null;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const d = new Date(fecha + (fecha.length === 10 ? 'T00:00:00' : ''));
+  return Math.floor((d - hoy) / 86400000);
+}
+function diasDesde(fecha) {
+  if (!fecha) return null;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const d = new Date(fecha + (fecha.length === 10 ? 'T00:00:00' : ''));
+  return Math.floor((hoy - d) / 86400000);
+}
+
+function pintarColumnaCola(bodyId, countId, lista, zona) {
+  document.getElementById(countId).textContent = lista.length;
+  const body = document.getElementById(bodyId);
+  if (lista.length === 0) {
+    const msg = zona === 'rojo'     ? 'Sin atrasados 👍'
+              : zona === 'amarillo' ? 'Nada por atender de inmediato'
+              : 'Sin instalaciones programadas para los próximos 7 días';
+    body.innerHTML = `<div class="cola-empty">${msg}</div>`;
+    return;
+  }
+  body.innerHTML = lista.map(p => renderCartaCola(p, zona)).join('');
+}
+
+function renderCartaCola(p, zona) {
+  const meta = generarMetaCarta(p, zona);
+  return `<div class="cola-card" data-id="${p.id}">
+    <div class="cola-card-head">
+      <span class="cola-card-num">${p.cotizacion_num ? '#' + p.cotizacion_num : ''}</span>
+      <span class="cola-card-cliente">${escapeHtml(p.cliente_nombre || '(sin nombre)')}</span>
+    </div>
+    <div class="cola-card-meta">${meta}</div>
+  </div>`;
+}
+
+function generarMetaCarta(p, zona) {
+  const estado = p.estado_instalacion;
+  const cuadrilla = p.cuadrilla === 'Otro' ? (p.cuadrilla_otro || 'Otro') : p.cuadrilla;
+  const lineas = [];
+
+  // Línea 1: estado y cuadrilla
+  let l1 = `<span>${estado}</span>`;
+  if (cuadrilla) l1 += ` · <span>${escapeHtml(cuadrilla)}</span>`;
+  else l1 += ` · <span class="${zona === 'rojo' ? 'alerta-roja' : 'alerta'}">Sin cuadrilla</span>`;
+  lineas.push(l1);
+
+  // Línea 2: contexto temporal según estado
+  if (estado === 'En instalación') {
+    const dias = diasDesde(p.fecha_inicio_instalacion);
+    if (dias !== null) {
+      const claseDias = dias >= 5 ? 'alerta-roja' : (dias >= 3 ? 'alerta' : '');
+      lineas.push(`<span class="${claseDias}">${dias === 0 ? 'Empezó hoy' : `Lleva ${dias} día${dias>1?'s':''} instalando`}</span>`);
+    }
+  } else if (estado === 'Programada') {
+    const dias = diasHasta(p.fecha_programada_instalacion);
+    if (dias !== null) {
+      if (dias < 0)       lineas.push(`<span class="alerta-roja">Atrasada ${Math.abs(dias)} día${Math.abs(dias)>1?'s':''}</span>`);
+      else if (dias === 0) lineas.push(`<span class="alerta">Programada para hoy</span>`);
+      else if (dias === 1) lineas.push(`<span class="alerta">Programada mañana</span>`);
+      else                 lineas.push(`<span>Programada en ${dias} días · ${fmtFecha(p.fecha_programada_instalacion)}</span>`);
+    }
+  } else if (estado === 'Pendiente') {
+    const dias = diasDesde(p.fecha_venta);
+    if (!p.cuadrilla) {
+      if (dias !== null && dias > 7) lineas.push(`<span class="alerta-roja">Sin cuadrilla · ${dias} días desde la venta</span>`);
+      else if (dias !== null && dias >= 4) lineas.push(`<span class="alerta">Sin cuadrilla · ${dias} días desde la venta</span>`);
+      else lineas.push(`<span>Vendida hace ${dias || 0} día${(dias||0)===1?'':'s'}</span>`);
+    } else if (!p.fecha_programada_instalacion) {
+      lineas.push(`<span class="alerta">Falta fecha programada</span>`);
+    }
+  }
+
+  return lineas.join('<br>');
+}
+
+function renderMetricas() {
+  const total = proyectos.length;
+  const activos = proyectos.filter(p => !p.bloqueado && p.estado_instalacion !== 'Instalada').length;
+  const cuadrillasActivas = new Set(
+    proyectos
+      .filter(p => p.estado_instalacion === 'En instalación' && p.cuadrilla)
+      .map(p => p.cuadrilla === 'Otro' ? p.cuadrilla_otro : p.cuadrilla)
+  ).size;
+  // Instalados este mes
+  const inicioMes = new Date(); inicioMes.setDate(1); inicioMes.setHours(0,0,0,0);
+  const instMes = proyectos.filter(p => {
+    if (p.estado_instalacion !== 'Instalada') return false;
+    if (!p.fecha_terminacion) return false;
+    return parseFecha(p.fecha_terminacion) >= inicioMes;
+  }).length;
+  const tramiteEnCurso = proyectos.filter(p => p.estado_tramite === 'En trámite').length;
+
+  document.getElementById('cola-metricas').innerHTML = `
+    <div class="metrica"><div class="metrica-num">${activos}</div><div class="metrica-label">Activos</div></div>
+    <div class="metrica"><div class="metrica-num">${instMes}</div><div class="metrica-label">Instalados este mes</div></div>
+    <div class="metrica"><div class="metrica-num">${cuadrillasActivas}</div><div class="metrica-label">Cuadrillas trabajando</div></div>
+    <div class="metrica"><div class="metrica-num">${tramiteEnCurso}</div><div class="metrica-label">Trámites en curso</div></div>
+    <div class="metrica"><div class="metrica-num">${total}</div><div class="metrica-label">Total histórico</div></div>
+  `;
 }
 
 function ordenar(lista) {

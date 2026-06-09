@@ -1268,8 +1268,13 @@ function renderCola() {
     if (u === 'rojo')     rojos.push(p);
     else if (u === 'amarillo') amarillos.push(p);
     else if (u === 'verde')    {
-      // En zona verde: solo mostrar los que tienen instalación programada para los próximos 7 días
-      if (p.fecha_programada_instalacion) {
+      // En zona verde queremos mostrar lo que requiere atención visible esta semana:
+      // - Proyectos "En instalación" (siempre, porque alguien está trabajando AHORA)
+      // - Proyectos "Programada" con fecha en los próximos 7 días
+      // - Los "Pendiente" verdes no entran (no requieren atención inmediata)
+      if (p.estado_instalacion === 'En instalación') {
+        verdes.push(p);
+      } else if (p.estado_instalacion === 'Programada' && p.fecha_programada_instalacion) {
         const dias = diasHasta(p.fecha_programada_instalacion);
         if (dias !== null && dias >= 0 && dias <= 7) verdes.push(p);
       }

@@ -862,8 +862,2297 @@ table.tabla {
 /* ============================================================
    CONFIG
    ============================================================ */
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM Producción · Tecnoden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ============================================================
+   CRM Producción Tecnoden — utilitario industrial
+   Tipografía: Inter Tight (UI) + JetBrains Mono (datos)
+   Paleta: grafito + acento amarillo solar
+   ============================================================ */
+:root {
+  /* Tema oscuro (default) */
+  --bg:        #0f1115;
+  --panel:    #161922;
+  --panel-2: #1d2230;
+  --line:     #262b3a;
+  --line-2:  #323849;
+  --ink:       #e8eaf0;
+  --ink-dim: #9aa3b8;
+  --ink-mute:#6b7390;
+  --accent:   #f5c518; /* amarillo solar */
+  --accent-2:#ffd84d;
+  --accent-ink: #000;  /* texto sobre acento */
+  --ok:       #4ade80;
+  --warn:    #fb923c;
+  --err:     #f87171;
+  --info:     #60a5fa;
+  --shadow:  rgba(0,0,0,0.4);
+  --row-hover: rgba(255,255,255,0.025);
+
+  /* Instalación (tonos cálidos) */
+  --inst-pendiente:    #6b7390;
+  --inst-programada:   #fb923c;
+  --inst-encurso:      #f97316;
+  --inst-instalada:    #4ade80;
+  /* Trámite (tonos fríos) */
+  --tra-sin:           #6b7390;
+  --tra-encurso:       #60a5fa;
+  --tra-aprobado:      #4ade80;
+  --tra-na:            #475569;
+
+  --r-sm: 4px;
+  --r:    6px;
+  --r-lg: 10px;
+}
+
+[data-theme="light"] {
+  /* Tema claro estilo Google/Notion */
+  --bg:        #ffffff;
+  --panel:    #ffffff;
+  --panel-2: #f6f7f9;
+  --line:     #e5e7eb;
+  --line-2:  #d1d5db;
+  --ink:       #1f2328;
+  --ink-dim: #4b5563;
+  --ink-mute:#6b7280;
+  --accent:   #f5c518;
+  --accent-2:#eab308;
+  --accent-ink: #000;
+  --ok:       #16a34a;
+  --warn:    #ea580c;
+  --err:     #dc2626;
+  --info:     #2563eb;
+  --shadow:  rgba(15,23,42,0.08);
+  --row-hover: rgba(15,23,42,0.04);
+
+  /* Instalación */
+  --inst-pendiente:    #6b7280;
+  --inst-programada:   #ea580c;
+  --inst-encurso:      #c2410c;
+  --inst-instalada:    #16a34a;
+  /* Trámite */
+  --tra-sin:           #6b7280;
+  --tra-encurso:       #2563eb;
+  --tra-aprobado:      #16a34a;
+  --tra-na:            #9ca3af;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.15s, color 0.15s;
+}
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* Transición suave al cambiar tema */
+.tabla-wrap, .drawer, .login-card, header.topbar, .filters,
+.field input, .field select, .field textarea, .btn, .estado-pill {
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+/* Hide helpers */
+.hidden { display: none !important; }
+
+/* ============================================================ LOGIN */
+#login-screen {
+  position: fixed; inset: 0;
+  display: grid; place-items: center;
+  background: radial-gradient(circle at 30% 20%, var(--panel-2) 0%, var(--bg) 60%);
+  z-index: 1000;
+}
+.login-card {
+  width: 360px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 28px;
+  box-shadow: 0 8px 32px var(--shadow);
+}
+.login-brand {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 24px;
+}
+.login-brand-mark {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  border-radius: var(--r-sm);
+  display: grid; place-items: center;
+  color: #000; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.login-brand-text { font-size: 13px; letter-spacing: 0.04em; color: var(--ink-dim); text-transform: uppercase; }
+.login-title { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+.login-sub { font-size: 12px; color: var(--ink-mute); margin: 0 0 20px; }
+
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-mute);
+  margin-bottom: 6px;
+}
+.field input, .field select, .field textarea {
+  width: 100%;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+  padding: 9px 11px;
+  border-radius: var(--r);
+  outline: none;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+.field textarea { resize: vertical; min-height: 70px; max-width: 100%; }
+.field input[readonly] {
+  background: var(--line) !important;
+  color: var(--ink-dim);
+  cursor: not-allowed;
+}
+
+.btn {
+  background: var(--accent);
+  color: #000;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  padding: 10px 16px;
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+  z-index: 1;
+}
+.btn:hover { background: var(--accent-2); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-dim);
+  border: 1px solid var(--line);
+}
+.btn-ghost:hover { background: var(--panel-2); color: var(--ink); }
+.btn-danger { background: var(--err); color: #fff; }
+.btn-sm { padding: 6px 10px; font-size: 13px; }
+
+.login-error { color: var(--err); font-size: 12px; margin-top: 8px; min-height: 16px; }
+
+/* ============================================================ APP SHELL */
+#app {
+  display: grid;
+  grid-template-rows: auto auto auto 1fr;
+  height: 100vh;
+}
+
+header.topbar {
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 20px;
+  height: 52px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  display: flex; align-items: center; gap: 12px;
+}
+.brand-logo {
+  height: 26px;
+  display: block;
+}
+.brand-sub {
+  color: var(--ink-mute);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-left: 1px solid var(--line-2);
+  padding-left: 12px;
+}
+
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+.theme-toggle {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--ink-dim);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  padding: 0;
+}
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+/* Mostrar solo el ícono apropiado según el tema */
+.theme-toggle .theme-icon-light { display: none; }
+.theme-toggle .theme-icon-dark  { display: block; }
+[data-theme="light"] .theme-toggle .theme-icon-light { display: block; }
+[data-theme="light"] .theme-toggle .theme-icon-dark  { display: none; }
+.user-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-dim);
+  padding: 4px 10px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+
+/* ============================================================ FILTERS BAR */
+.filters {
+  display: flex; gap: 10px; align-items: center;
+  padding: 12px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.filters select, .filters input {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 6px 10px;
+  border-radius: var(--r);
+  font-family: inherit;
+  font-size: 13px;
+}
+.filter-label { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* ============================================================ TABS */
+.tabs-bar {
+  display: flex;
+  gap: 2px;
+  padding: 0 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  align-items: flex-end;
+}
+.tab {
+  background: transparent;
+  border: none;
+  color: var(--ink-mute);
+  padding: 11px 18px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab:hover { color: var(--ink-dim); }
+.tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+/* ============================================================ URGENCIA */
+.urg-dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+.urg-rojo     { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.5); }
+.urg-amarillo { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.4); }
+.urg-verde    { background: #4ade80; }
+.urg-gris     { background: var(--ink-mute); opacity: 0.4; }
+.urg-cell { width: 28px; text-align: center; padding-left: 14px !important; padding-right: 4px !important; }
+
+/* ============================================================ VISTA DE COLA (Pendientes) */
+.cola-main {
+  padding: 16px 20px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.cola-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cola-seccion-titulo {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  font-weight: 600;
+  padding-left: 4px;
+}
+.cola-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.cola-col {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+}
+.cola-col-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-2);
+}
+.cola-col-title {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-dim);
+  flex: 1;
+}
+.cola-col-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--bg);
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-weight: 600;
+}
+.cola-col[data-zona="rojo"] .cola-col-count     { color: #ef4444; border-color: #ef4444; }
+.cola-col[data-zona="amarillo"] .cola-col-count { color: #f59e0b; border-color: #f59e0b; }
+.cola-col[data-zona="verde"] .cola-col-count    { color: #4ade80; border-color: #4ade80; }
+.cola-col-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 100px;
+}
+.cola-card {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line-2);
+  border-radius: var(--r);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background-color 0.12s, border-color 0.12s;
+}
+.cola-card:hover {
+  background: var(--bg);
+  border-left-color: var(--accent);
+}
+.cola-col[data-zona="rojo"]     .cola-card { border-left-color: #ef4444; }
+.cola-col[data-zona="amarillo"] .cola-card { border-left-color: #f59e0b; }
+.cola-col[data-zona="verde"]    .cola-card { border-left-color: #4ade80; }
+.cola-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.cola-card-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-mute);
+}
+.cola-card-cliente {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--ink);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cola-card-meta {
+  font-size: 11px;
+  color: var(--ink-dim);
+  line-height: 1.5;
+}
+.cola-card-meta .alerta {
+  color: var(--warn);
+  font-weight: 500;
+}
+.cola-card-meta .alerta-roja {
+  color: #ef4444;
+  font-weight: 600;
+}
+.cola-empty {
+  text-align: center;
+  color: var(--ink-mute);
+  font-size: 12px;
+  padding: 20px 10px;
+  font-style: italic;
+}
+
+.cola-metricas {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+.metrica {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 14px;
+  border-right: 1px solid var(--line);
+}
+.metrica:last-child { border-right: none; }
+.metrica-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.metrica-label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+@media (max-width: 960px) {
+  .cola-wrap { grid-template-columns: 1fr; }
+}
+
+/* ============================================================ MAIN AREA */
+main {
+  overflow: auto;
+  padding: 16px 20px;
+  align-self: start;
+}
+
+/* ============================================================ TABLE */
+.tabla-wrap {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: auto;
+}
+table.tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tabla th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-mute);
+  font-weight: 500;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-2);
+  position: sticky; top: 0;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.tabla th:hover { color: var(--ink); }
+.tabla th.sort-asc::after  { content: ' ↑'; color: var(--accent); }
+.tabla th.sort-desc::after { content: ' ↓'; color: var(--accent); }
+.tabla td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.tabla tr { cursor: pointer; }
+.tabla tr:hover td { background: var(--row-hover); }
+.tabla tr.bloqueado td { color: var(--ink-mute); }
+
+.tabla td.cell-warn { color: var(--warn); font-style: italic; }
+
+.estado-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  border: 1px solid;
+  white-space: nowrap;
+}
+/* Instalación */
+.inst-pendiente   { background: rgba(107,115,144,0.15); border-color: var(--inst-pendiente);  color: var(--inst-pendiente); }
+.inst-programada  { background: rgba(251,146,60,0.15);  border-color: var(--inst-programada); color: var(--inst-programada); }
+.inst-encurso     { background: rgba(249,115,22,0.18);  border-color: var(--inst-encurso);    color: var(--inst-encurso); }
+.inst-instalada   { background: rgba(74,222,128,0.15);  border-color: var(--inst-instalada);  color: var(--inst-instalada); }
+/* Trámite */
+.tra-sin          { background: rgba(107,115,144,0.15); border-color: var(--tra-sin);      color: var(--tra-sin); }
+.tra-encurso      { background: rgba(96,165,250,0.15);  border-color: var(--tra-encurso);  color: var(--tra-encurso); }
+.tra-aprobado     { background: rgba(74,222,128,0.15);  border-color: var(--tra-aprobado); color: var(--tra-aprobado); }
+.tra-na           { background: rgba(71,85,105,0.15);   border-color: var(--tra-na);       color: var(--tra-na); }
+
+.lock-icon { color: var(--warn); font-size: 11px; margin-right: 6px; }
+
+/* ============================================================ EMPTY STATES */
+.empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--ink-mute);
+}
+.empty h3 { color: var(--ink-dim); margin: 0 0 8px; font-weight: 500; }
+
+/* ============================================================ DETAIL DRAWER */
+.drawer-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+
+.drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 720px; max-width: 95vw;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  z-index: 60;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  display: flex; flex-direction: column;
+}
+.drawer.open { transform: translateX(0); }
+
+.drawer-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.drawer-head h2 { margin: 0; font-size: 16px; flex: 1; }
+.drawer-close {
+  background: transparent; border: none; color: var(--ink-dim);
+  font-size: 22px; cursor: pointer; padding: 0 4px;
+}
+.drawer-close:hover { color: var(--ink); }
+
+.drawer-body { flex: 1; overflow-y: auto; padding: 18px 20px; position: relative; }
+.drawer-footer {
+  border-top: 1px solid var(--line);
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  background: var(--panel);
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+}
+.drawer-footer button { position: relative; z-index: 11; }
+
+.section {
+  margin-bottom: 26px;
+}
+.section h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-mute);
+  margin: 0 0 10px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 6px;
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+/* Comentarios */
+.comentarios-list {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-bottom: 10px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.comentario {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.comentario .meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+  display: flex; gap: 10px;
+}
+.comentario .meta .autor { color: var(--accent); }
+.comentario-input-row { display: flex; gap: 8px; }
+.comentario-input-row textarea { flex: 1; min-height: 38px; resize: vertical; max-width: 100%; }
+
+.combo-row { display: flex; gap: 6px; }
+.combo-row select { flex: 1; }
+
+.banner-bloqueado {
+  background: rgba(251,146,60,0.1);
+  border: 1px solid var(--warn);
+  color: var(--warn);
+  padding: 10px 12px;
+  border-radius: var(--r);
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: flex; gap: 10px; align-items: center;
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  padding: 10px 16px;
+  border-radius: var(--r);
+  font-size: 13px;
+  z-index: 200;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.2s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ============================================================ MODAL CONFIG */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 100;
+}
+.modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 92%;
+  max-width: 720px;
+  max-height: 86vh;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 80px var(--shadow);
+}
+.modal-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 12px;
+}
+.modal-head h2 { margin: 0; font-size: 16px; flex: 1; }
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+.modal-footer {
+  border-top: 1px solid var(--line);
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sla-group { margin-bottom: 22px; }
+.sla-group h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-mute);
+  margin: 0 0 12px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 6px;
+}
+.sla-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 36px;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.sla-row:last-child { border-bottom: none; }
+.sla-row .sla-desc { color: var(--ink-dim); }
+.sla-row input[type="number"] {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: var(--r);
+  outline: none;
+  text-align: right;
+}
+.sla-row input[type="number"]:focus { border-color: var(--accent); }
+.sla-row .sla-unit { color: var(--ink-mute); font-size: 11px; }
+.toast.ok { border-color: var(--ok); }
+.toast.err { border-color: var(--err); }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .drawer { width: 100%; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .filters { padding: 10px; gap: 6px; }
+  main { padding: 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ LOGIN -->
+<div id="login-screen">
+  <form class="login-card" id="login-form" autocomplete="off">
+    <div class="login-brand">
+      <img src="logo.png" alt="Tecnoden" style="height:32px; display:block">
+    </div>
+    <h1 class="login-title">CRM Producción</h1>
+    <p class="login-sub">Seguimiento de instalaciones solares</p>
+
+    <div class="field">
+      <label for="u-user">Usuario</label>
+      <input id="u-user" name="user" autocomplete="off" required>
+    </div>
+    <div class="field">
+      <label for="u-pass">Contraseña</label>
+      <input id="u-pass" type="password" name="pass" autocomplete="new-password" required>
+    </div>
+    <button class="btn" style="width:100%" type="submit">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </form>
+</div>
+
+<!-- ============================================================ APP -->
+<div id="app" class="hidden">
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="logo.png" alt="Tecnoden" class="brand-logo">
+      <div class="brand-sub">Producción</div>
+    </div>
+
+    <div class="topbar-right">
+      <button class="theme-toggle" id="config-toggle" title="Configurar SLAs">
+        <span>⚙</span>
+      </button>
+      <button class="theme-toggle" id="theme-toggle" title="Cambiar tema">
+        <span class="theme-icon-dark">☾</span>
+        <span class="theme-icon-light">☼</span>
+      </button>
+      <div class="user-chip" id="user-chip">—</div>
+      <button class="btn btn-ghost btn-sm" id="logout">Salir</button>
+    </div>
+  </header>
+
+  <div class="tabs-bar">
+    <button class="tab active" data-tab="pendientes">Pendientes</button>
+    <button class="tab" data-tab="instalacion">Instalación</button>
+    <button class="tab" data-tab="tramite">Trámite CFE</button>
+  </div>
+
+  <!-- ============ TAB PENDIENTES (Vista de Cola) ============ -->
+  <main class="cola-main" data-tab-content="pendientes">
+    <div class="cola-seccion">
+      <div class="cola-seccion-titulo">Instalación</div>
+      <div class="cola-wrap">
+        <div class="cola-col" data-zona="rojo">
+          <div class="cola-col-header">
+            <span class="urg-dot urg-rojo"></span>
+            <span class="cola-col-title">Atrasados</span>
+            <span class="cola-col-count" id="cnt-i-rojo">0</span>
+          </div>
+          <div class="cola-col-body" id="cola-i-rojo"></div>
+        </div>
+        <div class="cola-col" data-zona="amarillo">
+          <div class="cola-col-header">
+            <span class="urg-dot urg-amarillo"></span>
+            <span class="cola-col-title">Por atender</span>
+            <span class="cola-col-count" id="cnt-i-amarillo">0</span>
+          </div>
+          <div class="cola-col-body" id="cola-i-amarillo"></div>
+        </div>
+        <div class="cola-col" data-zona="verde">
+          <div class="cola-col-header">
+            <span class="urg-dot urg-verde"></span>
+            <span class="cola-col-title">Esta semana</span>
+            <span class="cola-col-count" id="cnt-i-verde">0</span>
+          </div>
+          <div class="cola-col-body" id="cola-i-verde"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cola-seccion">
+      <div class="cola-seccion-titulo">Trámite CFE</div>
+      <div class="cola-wrap">
+        <div class="cola-col" data-zona="rojo">
+          <div class="cola-col-header">
+            <span class="urg-dot urg-rojo"></span>
+            <span class="cola-col-title">Atrasados</span>
+            <span class="cola-col-count" id="cnt-t-rojo">0</span>
+          </div>
+          <div class="cola-col-body" id="cola-t-rojo"></div>
+        </div>
+        <div class="cola-col" data-zona="amarillo">
+          <div class="cola-col-header">
+            <span class="urg-dot urg-amarillo"></span>
+            <span class="cola-col-title">Por atender</span>
+            <span class="cola-col-count" id="cnt-t-amarillo">0</span>
+          </div>
+          <div class="cola-col-body" id="cola-t-amarillo"></div>
+        </div>
+        <div class="cola-col" data-zona="verde">
+          <div class="cola-col-header">
+            <span class="urg-dot urg-verde"></span>
+            <span class="cola-col-title">Recientes</span>
+            <span class="cola-col-count" id="cnt-t-verde">0</span>
+          </div>
+          <div class="cola-col-body" id="cola-t-verde"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cola-metricas" id="cola-metricas"></div>
+  </main>
+
+  <!-- ============ TAB INSTALACIÓN ============ -->
+  <div class="filters hidden" data-tab-content="instalacion">
+    <span class="filter-label">Filtrar</span>
+    <select id="f-inst">
+      <option value="">Instalación: todos</option>
+      <option>Pendiente</option>
+      <option>Programada</option>
+      <option>En instalación</option>
+      <option>Instalada</option>
+    </select>
+    <select id="f-cuadrilla">
+      <option value="">Todas las cuadrillas</option>
+      <option>Cuadrilla Tecnoden</option>
+      <option>Cuadrilla Alex</option>
+      <option>Cuadrilla Javier</option>
+      <option>Otro</option>
+      <option value="__sin">Sin asignar</option>
+    </select>
+    <select id="f-urgencia">
+      <option value="">Todas las urgencias</option>
+      <option value="urgentes">Solo urgentes (🔴+🟡)</option>
+      <option value="rojo">🔴 Atrasados</option>
+      <option value="amarillo">🟡 Por atender</option>
+      <option value="verde">🟢 En orden</option>
+    </select>
+    <input id="f-busqueda" placeholder="Buscar cliente…" style="min-width:200px">
+  </div>
+
+  <main class="hidden" data-tab-content="instalacion">
+    <div class="tabla-wrap">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th></th>
+            <th data-sort="cotizacion_num">#</th>
+            <th data-sort="cliente_nombre">Cliente</th>
+            <th data-sort="estado_instalacion">Estado</th>
+            <th data-sort="cuadrilla">Cuadrilla</th>
+            <th data-sort="kw_sistema">kW</th>
+            <th data-sort="fecha_programada_instalacion">Programada</th>
+            <th data-sort="fecha_inicio_instalacion">Inicio</th>
+            <th data-sort="fecha_terminacion">Terminación</th>
+            <th data-sort="asesor_original">Asesor</th>
+            <th data-sort="actualizado_en">Actualizado</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body-inst"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- ============ TAB TRÁMITE CFE ============ -->
+  <div class="filters hidden" data-tab-content="tramite">
+    <span class="filter-label">Filtrar</span>
+    <select id="f-tramite">
+      <option value="">Trámite: todos</option>
+      <option>Sin iniciar</option>
+      <option>En trámite</option>
+      <option>Aprobado</option>
+      <option>N/A</option>
+    </select>
+    <input id="f-busqueda-t" placeholder="Buscar cliente o SIRESI…" style="min-width:240px">
+  </div>
+
+  <main class="hidden" data-tab-content="tramite">
+    <div class="tabla-wrap">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th data-sort="cotizacion_num">#</th>
+            <th data-sort="cliente_nombre">Cliente</th>
+            <th data-sort="estado_tramite">Estado trámite</th>
+            <th data-sort="siresi">SIRESI</th>
+            <th data-sort="asesor_original">Asesor</th>
+            <th data-sort="fecha_venta">Días desde venta</th>
+            <th data-sort="actualizado_en">Actualizado</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body-tra"></tbody>
+      </table>
+    </div>
+  </main>
+
+</div>
+
+<!-- ============================================================ DRAWER DETALLE -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <h2 id="d-titulo">—</h2>
+    <button class="drawer-close" id="d-close">×</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-footer" id="drawer-footer"></div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================ MODAL CONFIG -->
+<div class="modal-backdrop hidden" id="config-backdrop"></div>
+<div class="modal hidden" id="config-modal">
+  <div class="modal-head">
+    <h2>Configuración de SLAs</h2>
+    <button class="drawer-close" id="config-close">×</button>
+  </div>
+  <div class="modal-body" id="config-body">Cargando…</div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost btn-sm" data-config-action="reset">Restablecer defaults</button>
+    <div style="flex:1"></div>
+    <button class="btn btn-ghost btn-sm" data-config-action="close">Cerrar</button>
+    <button class="btn btn-sm" data-config-action="save">Guardar cambios</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
 const SUPABASE_URL  = 'https://lernzlbzrgatqkadwhas.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxlcm56bGJ6cmdhdHFrYWR3aGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxODgwMzgsImV4cCI6MjA5Mzc2NDAzOH0.G4AWdtTdxew0_EHGeHx28ijwHJOuyuXyVG0KbR-J8k4'; // ← Reemplazar con la misma anon key del CRM viejo
+
+// Usuarios V1 — definir contraseñas reales antes de desplegar
+const USERS = {
+  german:  { pass: 'german123',  display: 'German'  },
+  daniel:  { pass: 'daniel123',  display: 'Daniel'  },
+  sgerman: { pass: 'sgerman123', display: 'SGerman' },
+  admin:   { pass: 'Tecnoden10!', display: 'Admin'  }, // compartido con CRM viejo por compatibilidad
+  victor:  { pass: 'victor123',   display: 'Victor' }
+};
+
+const CUADRILLAS = ['Cuadrilla Tecnoden', 'Cuadrilla Alex', 'Cuadrilla Javier', 'Otro'];
+const ESTADOS_INST    = ['Pendiente', 'Programada', 'En instalación', 'Instalada'];
+const ESTADOS_TRAMITE = ['Sin iniciar', 'En trámite', 'Aprobado', 'N/A'];
+
+const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let currentUser = null;
+let proyectos   = [];
+let currentDrawerId = null;
+let sortState   = { field: 'actualizado_en', dir: 'desc' };
+let currentTab  = 'pendientes';
+let slaConfig   = {};
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+const $ = (sel) => document.querySelector(sel);
+
+$('#login-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const u = $('#u-user').value.trim().toLowerCase();
+  const p = $('#u-pass').value;
+  const found = USERS[u];
+  if (!found || found.pass !== p) {
+    $('#login-error').textContent = 'Usuario o contraseña incorrectos';
+    return;
+  }
+  currentUser = found.display;
+  localStorage.setItem('crmp_user', u);
+  startApp();
+});
+
+$('#logout').addEventListener('click', () => {
+  localStorage.removeItem('crmp_user');
+  location.reload();
+});
+
+// Tema claro/oscuro
+function aplicarTema(tema) {
+  document.documentElement.setAttribute('data-theme', tema);
+  localStorage.setItem('crmp_theme', tema);
+}
+// Aplicar tema guardado al cargar (antes de mostrar nada)
+aplicarTema(localStorage.getItem('crmp_theme') || 'dark');
+
+// Auto-login si hay sesión
+const saved = localStorage.getItem('crmp_user');
+if (saved && USERS[saved]) {
+  currentUser = USERS[saved].display;
+  startApp();
+}
+
+function startApp() {
+  $('#login-screen').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  $('#user-chip').textContent = currentUser;
+  bindUI();
+  cargarSlaConfig();
+  cargarCatalogo();
+  loadProyectos();
+}
+
+// Cargar configuración de SLAs desde Supabase
+async function cargarSlaConfig() {
+  const { data, error } = await supa.from('sla_config').select('*');
+  if (error) {
+    console.error('Error cargando SLA config:', error);
+    return;
+  }
+  slaConfig = {};
+  (data || []).forEach(row => { slaConfig[row.clave] = row.valor; });
+  // Si ya hay proyectos cargados, re-renderizar con los nuevos umbrales
+  if (proyectos.length > 0) render();
+}
+
+// Helper para leer un SLA con default por si no cargó
+function sla(clave, fallback) {
+  const v = slaConfig[clave];
+  return (typeof v === 'number') ? v : (fallback || 0);
+}
+
+/* ============================================================
+   UI BINDINGS
+   ============================================================ */
+function bindUI() {
+  // Toggle de tema
+  $('#theme-toggle').addEventListener('click', () => {
+    const actual = document.documentElement.getAttribute('data-theme') || 'dark';
+    aplicarTema(actual === 'dark' ? 'light' : 'dark');
+  });
+
+  // Configuración (engranaje)
+  $('#config-toggle').addEventListener('click', abrirConfig);
+  $('#config-close').addEventListener('click', cerrarConfig);
+  $('#config-backdrop').addEventListener('click', cerrarConfig);
+  $('#config-modal').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-config-action]');
+    if (!btn) return;
+    if (btn.dataset.configAction === 'save')  guardarConfig();
+    if (btn.dataset.configAction === 'close') cerrarConfig();
+    if (btn.dataset.configAction === 'reset') resetConfig();
+  });
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  // Filtros Instalación
+  ['f-inst', 'f-cuadrilla', 'f-urgencia', 'f-busqueda'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', render);
+  });
+  // Filtros Trámite
+  ['f-tramite', 'f-busqueda-t'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', render);
+  });
+
+  // Click en filas de ambas tablas (delegación)
+  ['tabla-body-inst', 'tabla-body-tra'].forEach(id => {
+    const tb = document.getElementById(id);
+    if (tb) tb.addEventListener('click', (e) => {
+      const tr = e.target.closest('tr[data-id]');
+      if (tr) openDrawer(parseInt(tr.dataset.id));
+    });
+  });
+
+  // Click en cartas de la cola (delegación)
+  ['cola-i-rojo', 'cola-i-amarillo', 'cola-i-verde', 'cola-t-rojo', 'cola-t-amarillo', 'cola-t-verde'].forEach(id => {
+    const col = document.getElementById(id);
+    if (col) col.addEventListener('click', (e) => {
+      const card = e.target.closest('.cola-card[data-id]');
+      if (card) openDrawer(parseInt(card.dataset.id));
+    });
+  });
+
+  // Footer del drawer (delegación)
+  $('#drawer-footer').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    if (btn.dataset.action === 'save')  guardarDrawer();
+    if (btn.dataset.action === 'close') closeDrawer();
+  });
+
+  // Sort de la tabla
+  document.querySelectorAll('.tabla th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const campo = th.dataset.sort;
+      if (sortState.field === campo) {
+        sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortState.field = campo;
+        sortState.dir = 'asc';
+      }
+      render();
+    });
+  });
+
+  // Drawer
+  $('#d-close').addEventListener('click', closeDrawer);
+  $('#drawer-backdrop').addEventListener('click', closeDrawer);
+
+  // Atajo de teclado: Ctrl/Cmd + S para guardar mientras el drawer está abierto
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      const saveBtn = document.querySelector('#drawer-footer button[data-action="save"]');
+      if (currentDrawerId && saveBtn) {
+        e.preventDefault();
+        guardarDrawer();
+      }
+    }
+    if (e.key === 'Escape' && currentDrawerId) {
+      closeDrawer();
+    }
+  });
+}
+
+/* ============================================================
+   DATA
+   ============================================================ */
+async function loadProyectos() {
+  const { data, error } = await supa
+    .from('proyectos')
+    .select('*')
+    .order('actualizado_en', { ascending: false });
+  if (error) {
+    toast('Error cargando proyectos: ' + error.message, 'err');
+    return;
+  }
+  proyectos = data || [];
+  render();
+}
+
+async function loadComentarios(proyectoId, tabla) {
+  const { data, error } = await supa
+    .from(tabla)
+    .select('*')
+    .eq('proyecto_id', proyectoId)
+    .order('creado_en', { ascending: false });
+  if (error) {
+    toast('Error cargando comentarios: ' + error.message, 'err');
+    return [];
+  }
+  return data || [];
+}
+
+async function addComentario(tabla, proyectoId, comentario) {
+  const { error } = await supa.from(tabla).insert({
+    proyecto_id: proyectoId,
+    autor: currentUser,
+    comentario
+  });
+  if (error) { toast('Error: ' + error.message, 'err'); return false; }
+  return true;
+}
+
+async function actualizarProyecto(id, cambios) {
+  const { data, error } = await supa.from('proyectos').update(cambios).eq('id', id).select();
+  if (error) {
+    console.error('Error actualizando proyecto:', error);
+    toast('Error: ' + error.message, 'err');
+    return false;
+  }
+  console.log('Proyecto actualizado:', data);
+  return true;
+}
+
+// Catálogo de equipos (marcas + potencias)
+let catalogoCache = { panel: [], inversor: [] };
+
+async function cargarCatalogo() {
+  const { data, error } = await supa
+    .from('catalogo_equipos')
+    .select('*')
+    .order('marca');
+  if (error) {
+    console.error('Error cargando catálogo:', error);
+    return;
+  }
+  catalogoCache.panel    = (data || []).filter(x => x.tipo === 'panel');
+  catalogoCache.inversor = (data || []).filter(x => x.tipo === 'inversor');
+}
+
+async function agregarAlCatalogo(tipo, marca, potencia) {
+  if (!marca) return false;
+  const { error } = await supa.from('catalogo_equipos').insert({
+    tipo, marca, potencia: potencia || null, creado_por: currentUser
+  });
+  // 23505 = unique_violation en Postgres → ya existe, todo bien, lo ignoramos
+  if (error && error.code !== '23505') {
+    console.error('Error agregando al catálogo:', error);
+    return false;
+  }
+  if (!error) {
+    await cargarCatalogo();
+  }
+  return true;
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+function switchTab(tab) {
+  currentTab = tab;
+  // Activar visualmente el botón del tab
+  document.querySelectorAll('.tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  // Mostrar/ocultar filtros y main del tab correspondiente
+  document.querySelectorAll('[data-tab-content]').forEach(el => {
+    el.classList.toggle('hidden', el.dataset.tabContent !== tab);
+  });
+  render();
+}
+
+/* ============================================================
+   URGENCIA (Instalación)
+   ============================================================ */
+// Devuelve 'rojo' | 'amarillo' | 'verde' | 'gris' según los SLAs definidos
+function calcularUrgenciaInst(p) {
+  if (!p) return 'gris';
+  const estado = p.estado_instalacion;
+  if (estado === 'Instalada') return 'gris';   // cerrado, no urgente
+
+  // Regla 4: En instalación prolongada
+  if (estado === 'En instalación') {
+    const dias = diasDesde(p.fecha_inicio_instalacion);
+    if (dias !== null) {
+      if (dias >= sla('inst_encurso_rojo', 5))     return 'rojo';
+      if (dias >= sla('inst_encurso_amarillo', 3)) return 'amarillo';
+      return 'verde';
+    }
+    return 'amarillo';
+  }
+
+  // Regla 3: Programada / atrasada
+  if (estado === 'Programada') {
+    const dias = diasHasta(p.fecha_programada_instalacion);
+    if (dias !== null) {
+      if (dias < 0)  return 'rojo';
+      if (dias <= sla('inst_programada_amarillo', 2)) return 'amarillo';
+      return 'verde';
+    }
+  }
+
+  // Reglas 1 y 2: Pendiente
+  if (estado === 'Pendiente') {
+    const diasDesdeVenta = diasDesde(p.fecha_venta);
+    const tieneCuadrilla = !!p.cuadrilla;
+    const tieneFecha     = !!p.fecha_programada_instalacion;
+
+    if (!tieneCuadrilla) {
+      if (diasDesdeVenta !== null) {
+        if (diasDesdeVenta > sla('inst_sin_cuadrilla_rojo', 7))      return 'rojo';
+        if (diasDesdeVenta >= sla('inst_sin_cuadrilla_amarillo', 4)) return 'amarillo';
+        return 'verde';
+      }
+      return 'verde';
+    }
+    if (!tieneFecha) {
+      const diasDesdeAct = Math.floor((Date.now() - new Date(p.actualizado_en)) / 86400000);
+      if (diasDesdeAct > sla('inst_sin_fecha_rojo', 10))     return 'rojo';
+      if (diasDesdeAct >= sla('inst_sin_fecha_amarillo', 4)) return 'amarillo';
+      return 'verde';
+    }
+    return 'amarillo';
+  }
+
+  return 'gris';
+}
+
+// Urgencia para el trámite CFE
+function calcularUrgenciaTra(p) {
+  if (!p) return 'gris';
+  const estado = p.estado_tramite;
+  if (estado === 'Aprobado' || estado === 'N/A') return 'gris';
+
+  // Regla 1: Sin iniciar tras la venta
+  if (estado === 'Sin iniciar') {
+    const dias = diasDesde(p.fecha_venta);
+    if (dias !== null) {
+      if (dias > sla('tra_sin_iniciar_rojo', 16))      return 'rojo';
+      if (dias >= sla('tra_sin_iniciar_amarillo', 8))  return 'amarillo';
+      return 'verde';
+    }
+    return 'verde';
+  }
+
+  // Regla 3 y 4: En trámite con instalación ya terminada (cuello de botella)
+  if (estado === 'En trámite' && p.estado_instalacion === 'Instalada' && p.fecha_terminacion) {
+    const diasDesdeInst = diasDesde(p.fecha_terminacion);
+    if (diasDesdeInst !== null) {
+      if (diasDesdeInst >= sla('tra_instalado_sin_aprobar_rojo', 30))     return 'rojo';
+      if (diasDesdeInst >= sla('tra_instalado_sin_aprobar_amarillo', 1))  return 'amarillo';
+    }
+  }
+
+  // Regla 4: Trámite total muy largo (cuenta desde la venta)
+  if (estado === 'En trámite') {
+    const diasTotal = diasDesde(p.fecha_venta);
+    if (diasTotal !== null) {
+      if (diasTotal >= sla('tra_total_rojo', 90))     return 'rojo';
+      if (diasTotal >= sla('tra_total_amarillo', 60)) {
+        // Si ya estaba en algo más urgente arriba no degradamos
+        // pero por sí solo es amarillo
+        // (se evalúa abajo combinando)
+      }
+    }
+  }
+
+  // Regla 2: Sin movimiento del SIRESI
+  if (estado === 'En trámite') {
+    // "Sin movimiento" = días desde el último comentario en proyecto_comentarios_cfe
+    // Aproximación: usamos actualizado_en del proyecto. Si nunca se ha tocado el SIRESI
+    // el actualizado_en también incluye otras ediciones, pero es la mejor señal disponible
+    // sin hacer otra query por proyecto.
+    const ult = p.ultima_actividad_siresi || p.actualizado_en;
+    const diasSinMov = Math.floor((Date.now() - new Date(ult)) / 86400000);
+    if (diasSinMov >= sla('tra_sin_movimiento_rojo', 30))     return 'rojo';
+    if (diasSinMov >= sla('tra_sin_movimiento_amarillo', 15)) return 'amarillo';
+  }
+
+  // Regla 4 cont: total amarillo
+  if (estado === 'En trámite') {
+    const diasTotal = diasDesde(p.fecha_venta);
+    if (diasTotal !== null && diasTotal >= sla('tra_total_amarillo', 60)) {
+      return 'amarillo';
+    }
+    return 'verde';
+  }
+
+  return 'gris';
+}
+
+function urgIcono(nivel) {
+  return `<span class="urg-dot urg-${nivel}" title="${urgTitulo(nivel)}"></span>`;
+}
+function urgTitulo(nivel) {
+  return {
+    'rojo':     'Atrasado · requiere atención inmediata',
+    'amarillo': 'Por atender pronto',
+    'verde':    'En orden',
+    'gris':     'No aplica / cerrado'
+  }[nivel] || '';
+}
+
+/* ============================================================
+   FILTROS
+   ============================================================ */
+function aplicarFiltrosInstalacion(lista) {
+  const fInst = document.getElementById('f-inst')?.value || '';
+  const fCua  = document.getElementById('f-cuadrilla')?.value || '';
+  const fUrg  = document.getElementById('f-urgencia')?.value || '';
+  const fBus  = (document.getElementById('f-busqueda')?.value || '').trim().toLowerCase();
+  return lista.filter(p => {
+    if (fInst && p.estado_instalacion !== fInst) return false;
+    if (fCua === '__sin') { if (p.cuadrilla) return false; }
+    else if (fCua && p.cuadrilla !== fCua) return false;
+    if (fUrg) {
+      const u = calcularUrgenciaInst(p);
+      if (fUrg === 'urgentes' && !(u === 'rojo' || u === 'amarillo')) return false;
+      else if (fUrg !== 'urgentes' && u !== fUrg) return false;
+    }
+    if (fBus) {
+      const blob = `${p.cliente_nombre||''} ${p.asesor_original||''}`.toLowerCase();
+      if (!blob.includes(fBus)) return false;
+    }
+    return true;
+  });
+}
+
+function aplicarFiltrosTramite(lista) {
+  const fTra = document.getElementById('f-tramite')?.value || '';
+  const fBus = (document.getElementById('f-busqueda-t')?.value || '').trim().toLowerCase();
+  return lista.filter(p => {
+    // Por default, excluir los N/A (proyectos que no requieren trámite con CFE).
+    // Solo se ven si el usuario explícitamente filtra por "N/A".
+    if (fTra !== 'N/A' && p.estado_tramite === 'N/A') return false;
+    if (fTra && p.estado_tramite !== fTra) return false;
+    if (fBus) {
+      const blob = `${p.cliente_nombre||''} ${p.asesor_original||''} ${p.siresi||''}`.toLowerCase();
+      if (!blob.includes(fBus)) return false;
+    }
+    return true;
+  });
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render() {
+  if (currentTab === 'pendientes') {
+    renderCola();
+  } else if (currentTab === 'instalacion') {
+    const filtrados = aplicarFiltrosInstalacion(proyectos);
+    ordenar(filtrados);
+    renderTablaInstalacion(filtrados);
+  } else {
+    const filtrados = aplicarFiltrosTramite(proyectos);
+    ordenar(filtrados);
+    renderTablaTramite(filtrados);
+  }
+  actualizarHeadersSort();
+}
+
+/* ============================================================
+   VISTA DE COLA (tab Pendientes)
+   ============================================================ */
+function renderCola() {
+  const activos = proyectos.filter(p => !p.bloqueado);
+
+  // ---- INSTALACIÓN ----
+  const instActivos = activos.filter(p => p.estado_instalacion !== 'Instalada');
+  const iRojos = [], iAmarillos = [], iVerdes = [];
+  instActivos.forEach(p => {
+    const u = calcularUrgenciaInst(p);
+    if (u === 'rojo')          iRojos.push(p);
+    else if (u === 'amarillo') iAmarillos.push(p);
+    else if (u === 'verde') {
+      if (p.estado_instalacion === 'En instalación') iVerdes.push(p);
+      else if (p.estado_instalacion === 'Programada' && p.fecha_programada_instalacion) {
+        const dias = diasHasta(p.fecha_programada_instalacion);
+        if (dias !== null && dias >= 0 && dias <= 7) iVerdes.push(p);
+      }
+    }
+  });
+  iRojos.sort((a, b) => fechaRef(a) - fechaRef(b));
+  iAmarillos.sort((a, b) => fechaRef(a) - fechaRef(b));
+  iVerdes.sort((a, b) => parseFecha(a.fecha_programada_instalacion || a.fecha_inicio_instalacion) - parseFecha(b.fecha_programada_instalacion || b.fecha_inicio_instalacion));
+
+  pintarColumnaCola('cola-i-rojo',     'cnt-i-rojo',     iRojos,     'rojo', 'inst');
+  pintarColumnaCola('cola-i-amarillo', 'cnt-i-amarillo', iAmarillos, 'amarillo', 'inst');
+  pintarColumnaCola('cola-i-verde',    'cnt-i-verde',    iVerdes,    'verde', 'inst');
+
+  // ---- TRÁMITE CFE ----
+  const traActivos = activos.filter(p => p.estado_tramite !== 'Aprobado' && p.estado_tramite !== 'N/A');
+  const tRojos = [], tAmarillos = [], tVerdes = [];
+  traActivos.forEach(p => {
+    const u = calcularUrgenciaTra(p);
+    if (u === 'rojo')          tRojos.push(p);
+    else if (u === 'amarillo') tAmarillos.push(p);
+    else if (u === 'verde') {
+      const diasV = diasDesde(p.fecha_venta);
+      if (diasV !== null && diasV <= 14) tVerdes.push(p);
+    }
+  });
+  tRojos.sort((a, b) => parseFecha(a.fecha_venta) - parseFecha(b.fecha_venta));
+  tAmarillos.sort((a, b) => parseFecha(a.fecha_venta) - parseFecha(b.fecha_venta));
+  tVerdes.sort((a, b) => parseFecha(b.fecha_venta) - parseFecha(a.fecha_venta));
+
+  pintarColumnaCola('cola-t-rojo',     'cnt-t-rojo',     tRojos,     'rojo', 'tra');
+  pintarColumnaCola('cola-t-amarillo', 'cnt-t-amarillo', tAmarillos, 'amarillo', 'tra');
+  pintarColumnaCola('cola-t-verde',    'cnt-t-verde',    tVerdes,    'verde', 'tra');
+
+  renderMetricas();
+}
+
+function fechaRef(p) {
+  // Fecha de referencia para ordenar dentro de una zona: la más vieja primero
+  if (p.fecha_inicio_instalacion) return parseFecha(p.fecha_inicio_instalacion);
+  if (p.fecha_programada_instalacion) return parseFecha(p.fecha_programada_instalacion);
+  if (p.fecha_venta) return parseFecha(p.fecha_venta);
+  return new Date(p.creado_en);
+}
+
+function diasHasta(fecha) {
+  if (!fecha) return null;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const d = new Date(fecha + (fecha.length === 10 ? 'T00:00:00' : ''));
+  return Math.floor((d - hoy) / 86400000);
+}
+function diasDesde(fecha) {
+  if (!fecha) return null;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const d = new Date(fecha + (fecha.length === 10 ? 'T00:00:00' : ''));
+  return Math.floor((hoy - d) / 86400000);
+}
+
+function pintarColumnaCola(bodyId, countId, lista, zona, tipo) {
+  document.getElementById(countId).textContent = lista.length;
+  const body = document.getElementById(bodyId);
+  if (lista.length === 0) {
+    const msg = tipo === 'inst'
+      ? (zona === 'rojo'     ? 'Sin atrasados 👍'
+        : zona === 'amarillo' ? 'Nada por atender de inmediato'
+        : 'Sin instalaciones próximas')
+      : (zona === 'rojo'     ? 'Sin trámites atrasados 👍'
+        : zona === 'amarillo' ? 'Trámites sin urgencias'
+        : 'Sin trámites recientes');
+    body.innerHTML = `<div class="cola-empty">${msg}</div>`;
+    return;
+  }
+  body.innerHTML = lista.map(p => renderCartaCola(p, zona, tipo)).join('');
+}
+
+function renderCartaCola(p, zona, tipo) {
+  const meta = (tipo === 'tra') ? generarMetaCartaTramite(p, zona) : generarMetaCarta(p, zona);
+  return `<div class="cola-card" data-id="${p.id}">
+    <div class="cola-card-head">
+      <span class="cola-card-num">${p.cotizacion_num ? '#' + p.cotizacion_num : ''}</span>
+      <span class="cola-card-cliente">${escapeHtml(p.cliente_nombre || '(sin nombre)')}</span>
+    </div>
+    <div class="cola-card-meta">${meta}</div>
+  </div>`;
+}
+
+function generarMetaCarta(p, zona) {
+  const estado = p.estado_instalacion;
+  const cuadrilla = p.cuadrilla === 'Otro' ? (p.cuadrilla_otro || 'Otro') : p.cuadrilla;
+  const lineas = [];
+
+  // Línea 1: estado y cuadrilla
+  let l1 = `<span>${estado}</span>`;
+  if (cuadrilla) l1 += ` · <span>${escapeHtml(cuadrilla)}</span>`;
+  else l1 += ` · <span class="${zona === 'rojo' ? 'alerta-roja' : 'alerta'}">Sin cuadrilla</span>`;
+  lineas.push(l1);
+
+  // Línea 2: contexto temporal según estado
+  if (estado === 'En instalación') {
+    const dias = diasDesde(p.fecha_inicio_instalacion);
+    if (dias !== null) {
+      const claseDias = dias >= sla('inst_encurso_rojo', 5) ? 'alerta-roja' : (dias >= sla('inst_encurso_amarillo', 3) ? 'alerta' : '');
+      lineas.push(`<span class="${claseDias}">${dias === 0 ? 'Empezó hoy' : `Lleva ${dias} día${dias>1?'s':''} instalando`}</span>`);
+    }
+  } else if (estado === 'Programada') {
+    const dias = diasHasta(p.fecha_programada_instalacion);
+    if (dias !== null) {
+      if (dias < 0)       lineas.push(`<span class="alerta-roja">Atrasada ${Math.abs(dias)} día${Math.abs(dias)>1?'s':''}</span>`);
+      else if (dias === 0) lineas.push(`<span class="alerta">Programada para hoy</span>`);
+      else if (dias === 1) lineas.push(`<span class="alerta">Programada mañana</span>`);
+      else                 lineas.push(`<span>Programada en ${dias} días · ${fmtFecha(p.fecha_programada_instalacion)}</span>`);
+    }
+  } else if (estado === 'Pendiente') {
+    const dias = diasDesde(p.fecha_venta);
+    if (!p.cuadrilla) {
+      if (dias !== null && dias > sla('inst_sin_cuadrilla_rojo', 7))      lineas.push(`<span class="alerta-roja">Sin cuadrilla · ${dias} días desde la venta</span>`);
+      else if (dias !== null && dias >= sla('inst_sin_cuadrilla_amarillo', 4)) lineas.push(`<span class="alerta">Sin cuadrilla · ${dias} días desde la venta</span>`);
+      else lineas.push(`<span>Vendida hace ${dias || 0} día${(dias||0)===1?'':'s'}</span>`);
+    } else if (!p.fecha_programada_instalacion) {
+      lineas.push(`<span class="alerta">Falta fecha programada</span>`);
+    }
+  }
+
+  return lineas.join('<br>');
+}
+
+function generarMetaCartaTramite(p, zona) {
+  const estado = p.estado_tramite;
+  const lineas = [];
+
+  // Línea 1: estado + SIRESI
+  let l1 = `<span>${estado}</span>`;
+  if (p.siresi) l1 += ` · <span class="mono" style="font-size:11px">SIRESI ${escapeHtml(p.siresi)}</span>`;
+  else if (estado !== 'Sin iniciar') l1 += ` · <span class="alerta">Sin SIRESI capturado</span>`;
+  lineas.push(l1);
+
+  // Línea 2: contexto temporal
+  const diasV = diasDesde(p.fecha_venta);
+  if (estado === 'Sin iniciar') {
+    if (diasV !== null) {
+      const claseDias = diasV > sla('tra_sin_iniciar_rojo', 16) ? 'alerta-roja' : (diasV >= sla('tra_sin_iniciar_amarillo', 8) ? 'alerta' : '');
+      lineas.push(`<span class="${claseDias}">Sin iniciar · ${diasV} día${diasV===1?'':'s'} desde la venta</span>`);
+    }
+  } else if (estado === 'En trámite') {
+    // Cuello de botella: instalación lista pero trámite no
+    if (p.estado_instalacion === 'Instalada' && p.fecha_terminacion) {
+      const diasInst = diasDesde(p.fecha_terminacion);
+      if (diasInst !== null && diasInst >= sla('tra_instalado_sin_aprobar_amarillo', 1)) {
+        const cls = diasInst >= sla('tra_instalado_sin_aprobar_rojo', 30) ? 'alerta-roja' : 'alerta';
+        lineas.push(`<span class="${cls}">Ya instalado · ${diasInst} día${diasInst===1?'':'s'} esperando aprobación</span>`);
+      } else if (diasV !== null) {
+        lineas.push(`<span>${diasV} días en trámite</span>`);
+      }
+    } else if (diasV !== null) {
+      const cls = diasV >= sla('tra_total_rojo', 90) ? 'alerta-roja' : (diasV >= sla('tra_total_amarillo', 60) ? 'alerta' : '');
+      lineas.push(`<span class="${cls}">${diasV} días en trámite</span>`);
+    }
+  }
+
+  return lineas.join('<br>');
+}
+
+function renderMetricas() {
+  const total = proyectos.length;
+  const activos = proyectos.filter(p => !p.bloqueado && p.estado_instalacion !== 'Instalada').length;
+  const cuadrillasActivas = new Set(
+    proyectos
+      .filter(p => p.estado_instalacion === 'En instalación' && p.cuadrilla)
+      .map(p => p.cuadrilla === 'Otro' ? p.cuadrilla_otro : p.cuadrilla)
+  ).size;
+  // Instalados este mes
+  const inicioMes = new Date(); inicioMes.setDate(1); inicioMes.setHours(0,0,0,0);
+  const instMes = proyectos.filter(p => {
+    if (p.estado_instalacion !== 'Instalada') return false;
+    if (!p.fecha_terminacion) return false;
+    return parseFecha(p.fecha_terminacion) >= inicioMes;
+  }).length;
+  const tramiteEnCurso = proyectos.filter(p => p.estado_tramite === 'En trámite').length;
+
+  document.getElementById('cola-metricas').innerHTML = `
+    <div class="metrica"><div class="metrica-num">${activos}</div><div class="metrica-label">Activos</div></div>
+    <div class="metrica"><div class="metrica-num">${instMes}</div><div class="metrica-label">Instalados este mes</div></div>
+    <div class="metrica"><div class="metrica-num">${cuadrillasActivas}</div><div class="metrica-label">Cuadrillas trabajando</div></div>
+    <div class="metrica"><div class="metrica-num">${tramiteEnCurso}</div><div class="metrica-label">Trámites en curso</div></div>
+    <div class="metrica"><div class="metrica-num">${total}</div><div class="metrica-label">Total histórico</div></div>
+  `;
+}
+
+function ordenar(lista) {
+  const { field, dir } = sortState;
+  const mult = dir === 'asc' ? 1 : -1;
+  lista.sort((a, b) => {
+    let va = a[field], vb = b[field];
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1;
+    if (vb == null) return -1;
+    if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * mult;
+    return String(va).localeCompare(String(vb), 'es') * mult;
+  });
+}
+
+function actualizarHeadersSort() {
+  document.querySelectorAll('.tabla th[data-sort]').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.sort === sortState.field) {
+      th.classList.add(sortState.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+    }
+  });
+}
+
+function renderTablaInstalacion(lista) {
+  const body = $('#tabla-body-inst');
+  if (lista.length === 0) {
+    body.innerHTML = `<tr><td colspan="11"><div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div></td></tr>`;
+    return;
+  }
+  body.innerHTML = lista.map(p => {
+    const cuadrilla = p.cuadrilla === 'Otro' ? (p.cuadrilla_otro || 'Otro') : p.cuadrilla;
+    const cuadrillaCell = cuadrilla
+      ? `<td class="mono" style="font-size:12px">${escapeHtml(cuadrilla)}</td>`
+      : `<td class="cell-warn mono" style="font-size:12px">Sin asignar</td>`;
+    const fechaCell = p.fecha_programada_instalacion
+      ? `<td class="mono">${fmtFecha(p.fecha_programada_instalacion)}</td>`
+      : `<td class="cell-warn mono">Sin fecha</td>`;
+    const urg = calcularUrgenciaInst(p);
+    return `<tr class="${p.bloqueado ? 'bloqueado' : ''}" data-id="${p.id}">
+      <td class="urg-cell">${urgIcono(urg)}</td>
+      <td class="mono" style="color:var(--ink-mute)">${p.cotizacion_num ? '#' + p.cotizacion_num : '—'}</td>
+      <td>${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}</td>
+      <td><span class="estado-pill ${classInst(p.estado_instalacion)}">${p.estado_instalacion || '—'}</span></td>
+      ${cuadrillaCell}
+      <td class="mono">${p.kw_sistema ? p.kw_sistema + ' kW' : '—'}</td>
+      ${fechaCell}
+      <td class="mono">${fmtFecha(p.fecha_inicio_instalacion)}</td>
+      <td class="mono">${fmtFecha(p.fecha_terminacion)}</td>
+      <td>${escapeHtml(p.asesor_original || '—')}</td>
+      <td class="mono" style="font-size:11px; color:var(--ink-mute)">${fmtRelativo(p.actualizado_en)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderTablaTramite(lista) {
+  const body = $('#tabla-body-tra');
+  if (lista.length === 0) {
+    body.innerHTML = `<tr><td colspan="7"><div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div></td></tr>`;
+    return;
+  }
+  body.innerHTML = lista.map(p => {
+    const diasVenta = p.fecha_venta
+      ? Math.floor((Date.now() - new Date(p.fecha_venta + 'T00:00:00')) / 86400000)
+      : null;
+    return `<tr class="${p.bloqueado ? 'bloqueado' : ''}" data-id="${p.id}">
+      <td class="mono" style="color:var(--ink-mute)">${p.cotizacion_num ? '#' + p.cotizacion_num : '—'}</td>
+      <td>${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}</td>
+      <td><span class="estado-pill ${classTra(p.estado_tramite)}">${p.estado_tramite || '—'}</span></td>
+      <td class="mono">${escapeHtml(p.siresi || '—')}</td>
+      <td>${escapeHtml(p.asesor_original || '—')}</td>
+      <td class="mono">${diasVenta !== null ? diasVenta + ' días' : '—'}</td>
+      <td class="mono" style="font-size:11px; color:var(--ink-mute)">${fmtRelativo(p.actualizado_en)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function classInst(estado) {
+  return {
+    'Pendiente':      'inst-pendiente',
+    'Programada':     'inst-programada',
+    'En instalación': 'inst-encurso',
+    'Instalada':      'inst-instalada'
+  }[estado] || 'inst-pendiente';
+}
+function classTra(estado) {
+  return {
+    'Sin iniciar': 'tra-sin',
+    'En trámite':  'tra-encurso',
+    'Aprobado':    'tra-aprobado',
+    'N/A':         'tra-na'
+  }[estado] || 'tra-sin';
+}
+
+/* ============================================================
+   DRAWER DETALLE
+   ============================================================ */
+async function openDrawer(id) {
+  currentDrawerId = id;
+  const p = proyectos.find(x => x.id === id);
+  if (!p) return;
+
+  $('#d-titulo').textContent = (p.cotizacion_num ? `#${p.cotizacion_num} · ` : '') + (p.cliente_nombre || '(sin nombre)');
+  $('#drawer').classList.add('open');
+  $('#drawer-backdrop').classList.add('open');
+
+  const cuadrillaSelect = CUADRILLAS.map(c =>
+    `<option ${p.cuadrilla === c ? 'selected' : ''}>${c}</option>`
+  ).join('');
+  const instSelect = ESTADOS_INST.map(e =>
+    `<option ${p.estado_instalacion === e ? 'selected' : ''}>${e}</option>`
+  ).join('');
+  const traSelect = ESTADOS_TRAMITE.map(e =>
+    `<option ${p.estado_tramite === e ? 'selected' : ''}>${e}</option>`
+  ).join('');
+
+  const ro = p.bloqueado ? 'disabled' : '';
+
+  $('#drawer-body').innerHTML = `
+    ${p.bloqueado ? `<div class="banner-bloqueado">🔒 Proyecto bloqueado · la cotización ya no está marcada como Vendida en el CRM principal.</div>` : ''}
+
+    <div class="section">
+      <h3>Cliente</h3>
+      <div class="grid-2">
+        <div class="field"><label>Nombre</label><input value="${escapeAttr(p.cliente_nombre)}" data-field="cliente_nombre" ${ro}></div>
+        <div class="field"><label>Teléfono</label><input value="${escapeAttr(p.cliente_telefono)}" data-field="cliente_telefono" ${ro}></div>
+        <div class="field"><label>Asesor original</label><input value="${escapeAttr(p.asesor_original)}" data-field="asesor_original" ${ro}></div>
+        <div class="field"><label>Fecha de venta</label><input type="date" value="${p.fecha_venta || ''}" data-field="fecha_venta" ${ro}></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Estado del proyecto</h3>
+      <div class="grid-2">
+        <div class="field"><label>Instalación</label>
+          <select data-field="estado_instalacion" id="d-estado-inst" ${ro}>${instSelect}</select>
+        </div>
+        <div class="field"><label>Trámite CFE</label>
+          <select data-field="estado_tramite" ${ro}>${traSelect}</select>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Cuadrilla y fechas</h3>
+      <div class="grid-3">
+        <div class="field"><label>Cuadrilla</label>
+          <select data-field="cuadrilla" ${ro} id="d-cuadrilla"><option value="">—</option>${cuadrillaSelect}</select>
+        </div>
+        <div class="field"><label>Si "Otro", ¿cuál?</label>
+          <input value="${escapeAttr(p.cuadrilla_otro)}" data-field="cuadrilla_otro" ${ro} id="d-cuadrilla-otro">
+        </div>
+        <div class="field"></div>
+      </div>
+      <div class="grid-3">
+        <div class="field"><label>Programada</label><input type="date" value="${p.fecha_programada_instalacion || ''}" data-field="fecha_programada_instalacion" id="d-fecha-prog" ${ro}></div>
+        <div class="field"><label>Inicio real</label><input type="date" value="${p.fecha_inicio_instalacion || ''}" data-field="fecha_inicio_instalacion" id="d-fecha-inicio" ${ro}></div>
+        <div class="field"><label>Terminación</label><input type="date" value="${p.fecha_terminacion || ''}" data-field="fecha_terminacion" id="d-fecha-term" ${ro}></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Datos técnicos · Paneles</h3>
+      <div class="grid-3">
+        <div class="field">
+          <label>Marca de paneles</label>
+          <div class="combo-row">
+            <select id="d-marca-paneles" ${ro}>
+              <option value="">— elegir —</option>
+              ${marcaOptionsHTML('panel', p.marca_paneles)}
+              <option value="__nueva__">+ Agregar nueva marca…</option>
+            </select>
+            <input value="${escapeAttr(p.marca_paneles)}" data-field="marca_paneles" id="d-marca-paneles-input" ${ro} class="hidden">
+          </div>
+        </div>
+        <div class="field">
+          <label># paneles</label>
+          <input type="number" value="${p.num_paneles || ''}" data-field="num_paneles" id="d-num-paneles" ${ro}>
+        </div>
+        <div class="field">
+          <label>Potencia por panel (W)</label>
+          <input type="number" step="any" value="${p.potencia_paneles || ''}" data-field="potencia_paneles" id="d-pot-paneles" ${ro}>
+        </div>
+      </div>
+      <div class="field" style="max-width:280px">
+        <label>kW del sistema (auto)</label>
+        <input type="number" step="0.01" value="${p.kw_sistema || ''}" data-field="kw_sistema" id="d-kw-sistema" ${ro} readonly style="background:var(--panel-2)">
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Datos técnicos · Inversor</h3>
+      <div class="grid-3">
+        <div class="field">
+          <label>Marca de inversor</label>
+          <div class="combo-row">
+            <select id="d-marca-inversor" ${ro}>
+              <option value="">— elegir —</option>
+              ${marcaOptionsHTML('inversor', p.marca_inversor)}
+              <option value="__nueva__">+ Agregar nueva marca…</option>
+            </select>
+            <input value="${escapeAttr(p.marca_inversor)}" data-field="marca_inversor" id="d-marca-inversor-input" ${ro} class="hidden">
+          </div>
+        </div>
+        <div class="field">
+          <label># inversores</label>
+          <input type="number" value="${p.num_inversores || ''}" data-field="num_inversores" ${ro}>
+        </div>
+        <div class="field">
+          <label>Potencia de inversor (kW)</label>
+          <input type="number" step="any" value="${p.potencia_inversor || ''}" data-field="potencia_inversor" ${ro}>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Notas técnicas</h3>
+      <div class="field"><textarea data-field="notas_tecnicas" ${ro}>${escapeHtml(p.notas_tecnicas || '')}</textarea></div>
+    </div>
+
+    <div class="section">
+      <h3>Trámite CFE (SIRESI)</h3>
+      <div class="field" style="max-width:280px"><label>Número SIRESI</label><input value="${escapeAttr(p.siresi)}" data-field="siresi" ${ro}></div>
+      <div style="margin-top:10px">
+        <div class="comentarios-list" id="cfe-list"><div class="empty" style="padding:20px">Cargando…</div></div>
+        ${p.bloqueado ? '' : `
+          <div class="comentario-input-row">
+            <textarea id="cfe-new" placeholder="Actualización del SIRESI…"></textarea>
+            <button class="btn btn-sm" id="cfe-add">Agregar</button>
+          </div>
+        `}
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Bitácora general</h3>
+      <div class="comentarios-list" id="gen-list"><div class="empty" style="padding:20px">Cargando…</div></div>
+      ${p.bloqueado ? '' : `
+        <div class="comentario-input-row">
+          <textarea id="gen-new" placeholder="Nota interna del proyecto…"></textarea>
+          <button class="btn btn-sm" id="gen-add">Agregar</button>
+        </div>
+      `}
+    </div>
+
+    ${p.bloqueado ? '' : `
+      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px">
+        <span style="font-size:11px; color:var(--ink-mute); align-self:center">Usa los botones de abajo para guardar →</span>
+      </div>
+    `}
+  `;
+
+  // Footer siempre visible
+  if (p.bloqueado) {
+    $('#drawer-footer').innerHTML = `
+      <span style="color:var(--warn); font-size:13px; margin-right:auto">🔒 Proyecto bloqueado</span>
+      <button class="btn btn-ghost btn-sm" data-action="close">Cerrar</button>
+    `;
+  } else {
+    $('#drawer-footer').innerHTML = `
+      <button class="btn btn-ghost btn-sm" data-action="close">Cerrar</button>
+      <button class="btn btn-sm" data-action="save">Guardar cambios</button>
+    `;
+  }
+
+  // Bindings del drawer (los que no son onclick directo)
+  if (!p.bloqueado) {
+    const cfeAdd = document.getElementById('cfe-add');
+    const genAdd = document.getElementById('gen-add');
+    if (cfeAdd) cfeAdd.onclick = () => agregarComentario('cfe');
+    if (genAdd) genAdd.onclick = () => agregarComentario('gen');
+
+    // Cálculo automático de kW = (# paneles × potencia panel) / 1000
+    const recalcularKW = () => {
+      const np = document.getElementById('d-num-paneles');
+      const pp = document.getElementById('d-pot-paneles');
+      const kw = document.getElementById('d-kw-sistema');
+      if (!np || !pp || !kw) return;
+      const n = parseFloat(np.value) || 0;
+      const w = parseFloat(pp.value) || 0;
+      if (n > 0 && w > 0) kw.value = ((n * w) / 1000).toFixed(2);
+    };
+    const numP = document.getElementById('d-num-paneles');
+    const potP = document.getElementById('d-pot-paneles');
+    if (numP) numP.oninput = recalcularKW;
+    if (potP) potP.oninput = recalcularKW;
+
+    // Selector de marcas
+    const mP   = document.getElementById('d-marca-paneles');
+    const mPi  = document.getElementById('d-marca-paneles-input');
+    const mI   = document.getElementById('d-marca-inversor');
+    const mIi  = document.getElementById('d-marca-inversor-input');
+    if (mP && mPi) bindMarcaSelect('panel', mP, mPi);
+    if (mI && mIi) bindMarcaSelect('inversor', mI, mIi);
+
+    // Sincronización estado de instalación ↔ fechas
+    const estadoInst = document.getElementById('d-estado-inst');
+    const fProg      = document.getElementById('d-fecha-prog');
+    const fInicio    = document.getElementById('d-fecha-inicio');
+    const fTerm      = document.getElementById('d-fecha-term');
+    const hoyStr = () => new Date().toISOString().slice(0, 10);
+
+    // Cuando se cambia el estado, autocompletar fechas si faltan
+    if (estadoInst) estadoInst.addEventListener('change', () => {
+      const nuevo = estadoInst.value;
+      if (nuevo === 'En instalación' && fInicio && !fInicio.value) {
+        fInicio.value = hoyStr();
+      }
+      if (nuevo === 'Instalada' && fTerm && !fTerm.value) {
+        fTerm.value = hoyStr();
+        // Si tampoco hay fecha de inicio, ponerla también (en una sola sesión instalaron y terminaron)
+        if (fInicio && !fInicio.value) fInicio.value = hoyStr();
+      }
+    });
+
+    // Cuando se cambia una fecha, autocompletar el estado si está atrasado
+    if (fInicio) fInicio.addEventListener('change', () => {
+      if (!fInicio.value || !estadoInst) return;
+      const actual = estadoInst.value;
+      // Avanzar el estado si todavía está en una etapa anterior
+      if (actual === 'Pendiente' || actual === 'Programada') {
+        estadoInst.value = 'En instalación';
+      }
+    });
+
+    if (fTerm) fTerm.addEventListener('change', () => {
+      if (!fTerm.value || !estadoInst) return;
+      const actual = estadoInst.value;
+      if (actual === 'Pendiente' || actual === 'Programada' || actual === 'En instalación') {
+        estadoInst.value = 'Instalada';
+      }
+    });
+
+    if (fProg) fProg.addEventListener('change', () => {
+      if (!fProg.value || !estadoInst) return;
+      // Solo avanzar de Pendiente a Programada; no degradar de En instalación
+      if (estadoInst.value === 'Pendiente') {
+        estadoInst.value = 'Programada';
+      }
+    });
+  }
+
+  // Cargar bitácoras
+  cargarBitacoras(id);
+}
+
+function bindMarcaSelect(tipo, selectEl, inputEl) {
+  selectEl.addEventListener('change', async () => {
+    const v = selectEl.value;
+    if (v === '__nueva__') {
+      const nueva = prompt(`Nueva marca de ${tipo}:`);
+      if (nueva && nueva.trim()) {
+        const marca = nueva.trim();
+        const ok = await agregarAlCatalogo(tipo, marca, null);
+        if (ok) {
+          toast(`Marca "${marca}" guardada`, 'ok');
+          // Repoblar el select
+          const opciones = ['<option value="">— elegir —</option>',
+                            marcaOptionsHTML(tipo, marca),
+                            '<option value="__nueva__">+ Agregar nueva marca…</option>'].join('');
+          selectEl.innerHTML = opciones;
+          selectEl.value = marca;
+          inputEl.value = marca;
+        }
+      } else {
+        selectEl.value = inputEl.value || '';
+      }
+    } else {
+      inputEl.value = v;
+    }
+  });
+}
+
+function marcaOptionsHTML(tipo, seleccionada) {
+  const lista = catalogoCache[tipo] || [];
+  // Marcas únicas
+  const marcas = [...new Set(lista.map(x => x.marca))].sort();
+  // Si la seleccionada no está en el catálogo (caso heredado), agregarla
+  if (seleccionada && !marcas.includes(seleccionada)) {
+    marcas.unshift(seleccionada);
+  }
+  return marcas.map(m =>
+    `<option value="${escapeAttr(m)}" ${m === seleccionada ? 'selected' : ''}>${escapeHtml(m)}</option>`
+  ).join('');
+}
+
+async function cargarBitacoras(id) {
+  const [cfe, gen] = await Promise.all([
+    loadComentarios(id, 'proyecto_comentarios_cfe'),
+    loadComentarios(id, 'proyecto_comentarios_general')
+  ]);
+  $('#cfe-list').innerHTML = cfe.length
+    ? cfe.map(c => renderComentario(c)).join('')
+    : '<div class="empty" style="padding:20px">Sin actualizaciones del SIRESI.</div>';
+  $('#gen-list').innerHTML = gen.length
+    ? gen.map(c => renderComentario(c)).join('')
+    : '<div class="empty" style="padding:20px">Sin notas en la bitácora.</div>';
+}
+
+function renderComentario(c) {
+  return `<div class="comentario">
+    <div class="meta">
+      <span class="autor">${escapeHtml(c.autor)}</span>
+      <span>${fmtFechaHora(c.creado_en)}</span>
+    </div>
+    <div>${escapeHtml(c.comentario)}</div>
+  </div>`;
+}
+
+async function agregarComentario(tipo) {
+  const tabla = tipo === 'cfe' ? 'proyecto_comentarios_cfe' : 'proyecto_comentarios_general';
+  const input = $('#' + tipo + '-new');
+  const texto = input.value.trim();
+  if (!texto) return;
+  const ok = await addComentario(tabla, currentDrawerId, texto);
+  if (ok) {
+    input.value = '';
+    toast('Comentario agregado', 'ok');
+    cargarBitacoras(currentDrawerId);
+  }
+}
+
+async function guardarDrawer() {
+  const cambios = {};
+  document.querySelectorAll('#drawer-body [data-field]').forEach(el => {
+    let v = el.value;
+    const field = el.dataset.field;
+
+    if (v === '' || v === undefined) {
+      v = null;
+    } else if (el.type === 'number') {
+      const n = parseFloat(v);
+      v = isNaN(n) ? null : n;
+    }
+    cambios[field] = v;
+  });
+
+  console.log('Guardando proyecto', currentDrawerId, cambios);
+
+  // Si hay marcas con potencia, alimentar el catálogo
+  if (cambios.marca_paneles && cambios.potencia_paneles) {
+    agregarAlCatalogo('panel', cambios.marca_paneles, cambios.potencia_paneles);
+  }
+  if (cambios.marca_inversor && cambios.potencia_inversor) {
+    agregarAlCatalogo('inversor', cambios.marca_inversor, cambios.potencia_inversor);
+  }
+
+  const ok = await actualizarProyecto(currentDrawerId, cambios);
+  if (ok) {
+    toast('Cambios guardados', 'ok');
+    await loadProyectos();
+    closeDrawer();
+  }
+}
+
+function closeDrawer() {
+  $('#drawer').classList.remove('open');
+  $('#drawer-backdrop').classList.remove('open');
+  currentDrawerId = null;
+}
+
+/* ============================================================
+   MODAL DE CONFIGURACIÓN DE SLAs
+   ============================================================ */
+function abrirConfig() {
+  $('#config-backdrop').classList.remove('hidden');
+  $('#config-modal').classList.remove('hidden');
+  renderConfig();
+}
+function cerrarConfig() {
+  $('#config-backdrop').classList.add('hidden');
+  $('#config-modal').classList.add('hidden');
+}
+
+async function renderConfig() {
+  const { data, error } = await supa.from('sla_config').select('*').order('categoria').order('orden');
+  if (error) {
+    $('#config-body').innerHTML = `<div class="empty">Error: ${error.message}</div>`;
+    return;
+  }
+  const porCategoria = { instalacion: [], tramite: [] };
+  (data || []).forEach(row => {
+    porCategoria[row.categoria].push(row);
+  });
+  const seccion = (titulo, rows) => `
+    <div class="sla-group">
+      <h3>${titulo}</h3>
+      ${rows.map(r => `
+        <div class="sla-row">
+          <div class="sla-desc">${escapeHtml(r.descripcion || r.clave)}</div>
+          <input type="number" min="0" step="1" value="${r.valor}" data-clave="${escapeAttr(r.clave)}">
+          <div class="sla-unit">días</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  $('#config-body').innerHTML = seccion('Instalación', porCategoria.instalacion) +
+                                 seccion('Trámite CFE', porCategoria.tramite);
+}
+
+async function guardarConfig() {
+  const inputs = document.querySelectorAll('#config-body input[data-clave]');
+  const actualizaciones = [];
+  inputs.forEach(inp => {
+    const valor = parseInt(inp.value, 10);
+    if (!isNaN(valor) && valor >= 0) {
+      actualizaciones.push({ clave: inp.dataset.clave, valor, actualizado_por: currentUser });
+    }
+  });
+  // Hacer upsert (uno por uno; son pocos)
+  let errores = 0;
+  for (const u of actualizaciones) {
+    const { error } = await supa.from('sla_config')
+      .update({ valor: u.valor, actualizado_por: u.actualizado_por })
+      .eq('clave', u.clave);
+    if (error) { errores++; console.error('Error guardando', u.clave, error); }
+  }
+  if (errores === 0) {
+    toast(`Guardados ${actualizaciones.length} SLAs`, 'ok');
+    await cargarSlaConfig();
+    cerrarConfig();
+  } else {
+    toast(`${errores} errores al guardar`, 'err');
+  }
+}
+
+async function resetConfig() {
+  if (!confirm('¿Restablecer todos los SLAs a sus valores por default?')) return;
+  const defaults = {
+    'inst_sin_cuadrilla_amarillo': 4, 'inst_sin_cuadrilla_rojo': 7,
+    'inst_sin_fecha_amarillo': 4,     'inst_sin_fecha_rojo': 10,
+    'inst_programada_amarillo': 2,
+    'inst_encurso_amarillo': 3,       'inst_encurso_rojo': 5,
+    'tra_sin_iniciar_amarillo': 8,    'tra_sin_iniciar_rojo': 16,
+    'tra_sin_movimiento_amarillo': 15,'tra_sin_movimiento_rojo': 30,
+    'tra_instalado_sin_aprobar_amarillo': 1, 'tra_instalado_sin_aprobar_rojo': 30,
+    'tra_total_amarillo': 60,         'tra_total_rojo': 90
+  };
+  for (const [clave, valor] of Object.entries(defaults)) {
+    await supa.from('sla_config').update({ valor, actualizado_por: currentUser }).eq('clave', clave);
+  }
+  toast('SLAs restablecidos', 'ok');
+  await cargarSlaConfig();
+  renderConfig();
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function estadoClass(e) {
+  return {
+    'Pendiente':       'estado-pendiente',
+    'En trámite':      'estado-tramite',
+    'En instalación':  'estado-instalacion',
+    'Terminado':       'estado-terminado'
+  }[e] || 'estado-pendiente';
+}
+function parseFecha(f) {
+  const d = new Date(f + 'T00:00:00');
+  return isNaN(d) ? new Date(f) : d;
+}
+function fmtFecha(f) {
+  if (!f) return '—';
+  const d = parseFecha(f);
+  return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
+}
+function fmtFechaHora(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) + ' · ' +
+         d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+}
+function fmtRelativo(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  const ahora = new Date();
+  const diffMs = ahora - d;
+  const minutos = Math.floor(diffMs / 60000);
+  const horas   = Math.floor(diffMs / 3600000);
+  const dias    = Math.floor(diffMs / 86400000);
+  if (minutos < 1)  return 'ahora';
+  if (minutos < 60) return `hace ${minutos} min`;
+  if (horas < 24)   return `hace ${horas} h`;
+  if (dias < 7)     return `hace ${dias} día${dias > 1 ? 's' : ''}`;
+  if (dias < 30)    return `hace ${Math.floor(dias/7)} sem`;
+  return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: '2-digit' });
+}
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
+let toastTimer = null;
+function toast(msg, kind = 'ok') {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + kind;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+</script>
+</body>
+</html>
 
 // Usuarios V1 — definir contraseñas reales antes de desplegar
 const USERS = {

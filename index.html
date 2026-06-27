@@ -959,8 +959,7 @@ table.tabla {
             <th data-sort="cliente_nombre">Cliente</th>
             <th data-sort="estado_tramite">Estado trámite</th>
             <th data-sort="siresi">SIRESI</th>
-            <th data-sort="asesor_original">Asesor</th>
-            <th data-sort="fecha_venta">Días desde venta</th>
+            <th data-sort="fecha_inicio_tramite">Días en trámite</th>
             <th data-sort="actualizado_en">Actualizado</th>
           </tr>
         </thead>
@@ -1744,20 +1743,22 @@ function renderTablaInstalacion(lista) {
 function renderTablaTramite(lista) {
   const body = $('#tabla-body-tra');
   if (lista.length === 0) {
-    body.innerHTML = `<tr><td colspan="7"><div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div></td></tr>`;
+    body.innerHTML = `<tr><td colspan="6"><div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div></td></tr>`;
     return;
   }
   body.innerHTML = lista.map(p => {
-    const diasVenta = p.fecha_venta
-      ? Math.floor((Date.now() - new Date(p.fecha_venta + 'T00:00:00')) / 86400000)
+    const diasTramite = p.fecha_inicio_tramite
+      ? Math.floor((Date.now() - new Date(p.fecha_inicio_tramite + 'T00:00:00')) / 86400000)
       : null;
+    const diasCell = diasTramite !== null
+      ? `<td class="mono">${diasTramite} días</td>`
+      : `<td class="cell-warn mono">Sin iniciar</td>`;
     return `<tr class="${p.bloqueado ? 'bloqueado' : ''}" data-id="${p.id}">
       <td class="mono" style="color:var(--ink-mute)">${p.cotizacion_num ? '#' + p.cotizacion_num : '—'}</td>
       <td>${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}</td>
       <td><span class="estado-pill ${classTra(p.estado_tramite)}">${p.estado_tramite || '—'}</span></td>
       <td class="mono">${escapeHtml(p.siresi || '—')}</td>
-      <td>${escapeHtml(p.asesor_original || '—')}</td>
-      <td class="mono">${diasVenta !== null ? diasVenta + ' días' : '—'}</td>
+      ${diasCell}
       <td class="mono" style="font-size:11px; color:var(--ink-mute)">${fmtRelativo(p.actualizado_en)}</td>
     </tr>`;
   }).join('');
@@ -1824,7 +1825,10 @@ async function openDrawer(id) {
           <select data-field="estado_instalacion" id="d-estado-inst" ${ro}>${instSelect}</select>
         </div>
         <div class="field"><label>Trámite CFE</label>
-          <select data-field="estado_tramite" ${ro}>${traSelect}</select>
+          <select data-field="estado_tramite" id="d-estado-tra" ${ro}>${traSelect}</select>
+        </div>
+        <div class="field"><label>Inicio del trámite</label>
+          <input type="date" value="${p.fecha_inicio_tramite || ''}" data-field="fecha_inicio_tramite" id="d-fecha-tramite" ${ro}>
         </div>
       </div>
     </div>
@@ -2019,11 +2023,20 @@ async function openDrawer(id) {
       }
     });
 
-    if (fProg) fProg.addEventListener('change', () => {
+   if (fProg) fProg.addEventListener('change', () => {
       if (!fProg.value || !estadoInst) return;
       // Solo avanzar de Pendiente a Programada; no degradar de En instalación
       if (estadoInst.value === 'Pendiente') {
         estadoInst.value = 'Programada';
+      }
+    });
+
+    // Sincronización del trámite CFE: al pasar a "En trámite", poner fecha de inicio si falta
+    const estadoTra = document.getElementById('d-estado-tra');
+    const fTramite  = document.getElementById('d-fecha-tramite');
+    if (estadoTra) estadoTra.addEventListener('change', () => {
+      if (estadoTra.value === 'En trámite' && fTramite && !fTramite.value) {
+        fTramite.value = hoyStr();
       }
     });
   }

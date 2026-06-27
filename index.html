@@ -2211,7 +2211,48 @@ async function renderConfig() {
     </div>
   `;
   $('#config-body').innerHTML = seccion('Instalación', porCategoria.instalacion) +
-                                 seccion('Trámite CFE', porCategoria.tramite);
+                                 seccion('Trámite CFE', porCategoria.tramite) +
+                                 `<div id="config-marcas"><div class="sla-group"><h3>Marcas guardadas</h3><div style="color:var(--ink-mute);font-size:12px">Cargando…</div></div></div>`;
+  renderMarcasConfig();
+}
+
+async function renderMarcasConfig() {
+  const { data, error } = await supa.from('catalogo_equipos').select('*').order('tipo').order('marca');
+  const cont = document.getElementById('config-marcas');
+  if (!cont) return;
+  if (error) {
+    cont.innerHTML = `<div class="sla-group"><h3>Marcas guardadas</h3><div style="color:var(--err)">Error: ${error.message}</div></div>`;
+    return;
+  }
+  const paneles   = (data || []).filter(x => x.tipo === 'panel');
+  const inversores = (data || []).filter(x => x.tipo === 'inversor');
+
+  const lista = (titulo, rows) => `
+    <div class="sla-group">
+      <h3>${titulo}</h3>
+      ${rows.length === 0 ? '<div style="color:var(--ink-mute);font-size:12px">Sin marcas guardadas.</div>' :
+        rows.map(r => `
+          <div class="sla-row" style="grid-template-columns: 1fr auto">
+            <div class="sla-desc">${escapeHtml(r.marca)}${r.potencia ? ` <span style="color:var(--ink-mute)">· ${r.potencia}</span>` : ''}</div>
+            <button class="btn btn-ghost btn-sm" data-borrar-marca="${r.id}" title="Borrar marca">🗑</button>
+          </div>
+        `).join('')}
+    </div>
+  `;
+  cont.innerHTML = lista('Marcas de paneles', paneles) + lista('Marcas de inversores', inversores);
+
+  // Bindings de borrado
+  cont.querySelectorAll('[data-borrar-marca]').forEach(btn => {
+    btn.onclick = async () => {
+      const id = btn.dataset.borrarMarca;
+      if (!confirm('¿Borrar esta marca del catálogo? Los proyectos que ya la usan no se modifican.')) return;
+      const { error } = await supa.from('catalogo_equipos').delete().eq('id', id);
+      if (error) { toast('Error al borrar: ' + error.message, 'err'); return; }
+      toast('Marca borrada', 'ok');
+      await cargarCatalogo();
+      renderMarcasConfig();
+    };
+  });
 }
 
 async function guardarConfig() {

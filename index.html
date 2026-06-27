@@ -1750,9 +1750,24 @@ function renderTablaTramite(lista) {
     const diasTramite = p.fecha_inicio_tramite
       ? Math.floor((Date.now() - new Date(p.fecha_inicio_tramite + 'T00:00:00')) / 86400000)
       : null;
-    const diasCell = diasTramite !== null
-      ? `<td class="mono">${diasTramite} días</td>`
-      : `<td class="cell-warn mono">Sin iniciar</td>`;
+
+    // Celda de días según el estado del trámite
+    let diasCell;
+    if (p.estado_tramite === 'N/A') {
+      diasCell = `<td class="mono" style="color:var(--ink-mute)">N/A</td>`;
+    } else if (p.estado_tramite === 'Aprobado') {
+      diasCell = diasTramite !== null
+        ? `<td class="mono">${diasTramite} días</td>`
+        : `<td class="mono" style="color:var(--ink-mute)">Aprobado</td>`;
+    } else if (p.estado_tramite === 'Sin iniciar') {
+      diasCell = `<td class="cell-warn mono">Sin iniciar</td>`;
+    } else {
+      // En trámite
+      diasCell = diasTramite !== null
+        ? `<td class="mono">${diasTramite} días</td>`
+        : `<td class="cell-warn mono">Sin fecha de inicio</td>`;
+    }
+
     return `<tr class="${p.bloqueado ? 'bloqueado' : ''}" data-id="${p.id}">
       <td class="mono" style="color:var(--ink-mute)">${p.cotizacion_num ? '#' + p.cotizacion_num : '—'}</td>
       <td>${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}</td>

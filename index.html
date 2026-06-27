@@ -2153,12 +2153,12 @@ async function guardarDrawer() {
 
   console.log('Guardando proyecto', currentDrawerId, cambios);
 
-  // Si hay marcas con potencia, alimentar el catálogo
-  if (cambios.marca_paneles && cambios.potencia_paneles) {
-    agregarAlCatalogo('panel', cambios.marca_paneles, cambios.potencia_paneles);
+ // Alimentar el catálogo solo con la marca (sin potencia)
+  if (cambios.marca_paneles) {
+    agregarAlCatalogo('panel', cambios.marca_paneles, null);
   }
-  if (cambios.marca_inversor && cambios.potencia_inversor) {
-    agregarAlCatalogo('inversor', cambios.marca_inversor, cambios.potencia_inversor);
+  if (cambios.marca_inversor) {
+    agregarAlCatalogo('inversor', cambios.marca_inversor, null);
   }
 
   const ok = await actualizarProyecto(currentDrawerId, cambios);
@@ -2233,7 +2233,7 @@ async function renderMarcasConfig() {
       ${rows.length === 0 ? '<div style="color:var(--ink-mute);font-size:12px">Sin marcas guardadas.</div>' :
         rows.map(r => `
           <div class="sla-row" style="grid-template-columns: 1fr auto">
-            <div class="sla-desc">${escapeHtml(r.marca)}${r.potencia ? ` <span style="color:var(--ink-mute)">· ${r.potencia}</span>` : ''}</div>
+           <div class="sla-desc">${escapeHtml(r.marca)}</div>
             <button class="btn btn-ghost btn-sm" data-borrar-marca="${r.id}" title="Borrar marca">🗑</button>
           </div>
         `).join('')}

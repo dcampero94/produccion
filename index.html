@@ -453,6 +453,7 @@ header.topbar {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
+  width: 100%;
 }
 .metrica {
   display: flex;
@@ -842,7 +843,7 @@ table.tabla {
           </div>
           <div class="cola-col-body" id="cola-i-amarillo"></div>
         </div>
-      <div class="cola-col" data-zona="verde">
+        <div class="cola-col" data-zona="verde">
           <div class="cola-col-header">
             <span class="urg-dot urg-verde"></span>
             <span class="cola-col-title">Pendientes</span>
@@ -850,6 +851,8 @@ table.tabla {
           </div>
           <div class="cola-col-body" id="cola-i-verde"></div>
         </div>
+      </div>
+    </div>
 
     <div class="cola-seccion">
       <div class="cola-seccion-titulo">Trámite CFE</div>
@@ -996,20 +999,19 @@ table.tabla {
     <button class="btn btn-sm" data-config-action="save">Guardar cambios</button>
   </div>
 </div>
-
 <script>
 /* ============================================================
    CONFIG
    ============================================================ */
 const SUPABASE_URL  = 'https://lernzlbzrgatqkadwhas.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxlcm56bGJ6cmdhdHFrYWR3aGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxODgwMzgsImV4cCI6MjA5Mzc2NDAzOH0.G4AWdtTdxew0_EHGeHx28ijwHJOuyuXyVG0KbR-J8k4'; // ← Reemplazar con la misma anon key del CRM viejo
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxlcm56bGJ6cmdhdHFrYWR3aGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxODgwMzgsImV4cCI6MjA5Mzc2NDAzOH0.G4AWdtTdxew0_EHGeHx28ijwHJOuyuXyVG0KbR-J8k4';
 
-// Usuarios V1 — definir contraseñas reales antes de desplegar
+// Usuarios V1
 const USERS = {
   german:  { pass: 'german123',  display: 'German'  },
   daniel:  { pass: 'daniel123',  display: 'Daniel'  },
   sgerman: { pass: 'sgerman123', display: 'SGerman' },
-  admin:   { pass: 'Tecnoden10!', display: 'Admin'  }, // compartido con CRM viejo por compatibilidad
+  admin:   { pass: 'Tecnoden10!', display: 'Admin'  },
   victor:  { pass: 'victor123',   display: 'Victor' }
 };
 
@@ -1058,7 +1060,6 @@ function aplicarTema(tema) {
   document.documentElement.setAttribute('data-theme', tema);
   localStorage.setItem('crmp_theme', tema);
 }
-// Aplicar tema guardado al cargar (antes de mostrar nada)
 aplicarTema(localStorage.getItem('crmp_theme') || 'dark');
 
 // Auto-login si hay sesión
@@ -1087,7 +1088,6 @@ async function cargarSlaConfig() {
   }
   slaConfig = {};
   (data || []).forEach(row => { slaConfig[row.clave] = row.valor; });
-  // Si ya hay proyectos cargados, re-renderizar con los nuevos umbrales
   if (proyectos.length > 0) render();
 }
 
@@ -1244,7 +1244,7 @@ async function actualizarProyecto(id, cambios) {
   return true;
 }
 
-// Catálogo de equipos (marcas + potencias)
+// Catálogo de equipos (marcas)
 let catalogoCache = { panel: [], inversor: [] };
 
 async function cargarCatalogo() {
@@ -1265,7 +1265,7 @@ async function agregarAlCatalogo(tipo, marca, potencia) {
   const { error } = await supa.from('catalogo_equipos').insert({
     tipo, marca, potencia: potencia || null, creado_por: currentUser
   });
-  // 23505 = unique_violation en Postgres → ya existe, todo bien, lo ignoramos
+  // 23505 = unique_violation → ya existe, lo ignoramos
   if (error && error.code !== '23505') {
     console.error('Error agregando al catálogo:', error);
     return false;
@@ -1281,11 +1281,9 @@ async function agregarAlCatalogo(tipo, marca, potencia) {
    ============================================================ */
 function switchTab(tab) {
   currentTab = tab;
-  // Activar visualmente el botón del tab
   document.querySelectorAll('.tab').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === tab);
   });
-  // Mostrar/ocultar filtros y main del tab correspondiente
   document.querySelectorAll('[data-tab-content]').forEach(el => {
     el.classList.toggle('hidden', el.dataset.tabContent !== tab);
   });
@@ -1295,11 +1293,10 @@ function switchTab(tab) {
 /* ============================================================
    URGENCIA (Instalación)
    ============================================================ */
-// Devuelve 'rojo' | 'amarillo' | 'verde' | 'gris' según los SLAs definidos
 function calcularUrgenciaInst(p) {
   if (!p) return 'gris';
   const estado = p.estado_instalacion;
-  if (estado === 'Instalada') return 'gris';   // cerrado, no urgente
+  if (estado === 'Instalada') return 'gris';
 
   // Regla 4: En instalación prolongada
   if (estado === 'En instalación') {
@@ -1320,6 +1317,8 @@ function calcularUrgenciaInst(p) {
       if (dias <= sla('inst_programada_amarillo', 2)) return 'amarillo';
       return 'verde';
     }
+    // Programada pero sin fecha puesta: cae en verde (Pendientes) para que no desaparezca
+    return 'verde';
   }
 
   // Reglas 1 y 2: Pendiente
@@ -1365,7 +1364,7 @@ function calcularUrgenciaTra(p) {
     return 'verde';
   }
 
-  // Regla 3 y 4: En trámite con instalación ya terminada (cuello de botella)
+  // Regla 3: En trámite con instalación ya terminada (cuello de botella)
   if (estado === 'En trámite' && p.estado_instalacion === 'Instalada' && p.fecha_terminacion) {
     const diasDesdeInst = diasDesde(p.fecha_terminacion);
     if (diasDesdeInst !== null) {
@@ -1377,22 +1376,11 @@ function calcularUrgenciaTra(p) {
   // Regla 4: Trámite total muy largo (cuenta desde la venta)
   if (estado === 'En trámite') {
     const diasTotal = diasDesde(p.fecha_venta);
-    if (diasTotal !== null) {
-      if (diasTotal >= sla('tra_total_rojo', 90))     return 'rojo';
-      if (diasTotal >= sla('tra_total_amarillo', 60)) {
-        // Si ya estaba en algo más urgente arriba no degradamos
-        // pero por sí solo es amarillo
-        // (se evalúa abajo combinando)
-      }
-    }
+    if (diasTotal !== null && diasTotal >= sla('tra_total_rojo', 90)) return 'rojo';
   }
 
   // Regla 2: Sin movimiento del SIRESI
   if (estado === 'En trámite') {
-    // "Sin movimiento" = días desde el último comentario en proyecto_comentarios_cfe
-    // Aproximación: usamos actualizado_en del proyecto. Si nunca se ha tocado el SIRESI
-    // el actualizado_en también incluye otras ediciones, pero es la mejor señal disponible
-    // sin hacer otra query por proyecto.
     const ult = p.ultima_actividad_siresi || p.actualizado_en;
     const diasSinMov = Math.floor((Date.now() - new Date(ult)) / 86400000);
     if (diasSinMov >= sla('tra_sin_movimiento_rojo', 30))     return 'rojo';
@@ -1452,8 +1440,6 @@ function aplicarFiltrosTramite(lista) {
   const fTra = document.getElementById('f-tramite')?.value || '';
   const fBus = (document.getElementById('f-busqueda-t')?.value || '').trim().toLowerCase();
   return lista.filter(p => {
-    // Por default, excluir los N/A (proyectos que no requieren trámite con CFE).
-    // Solo se ven si el usuario explícitamente filtra por "N/A".
     if (fTra !== 'N/A' && p.estado_tramite === 'N/A') return false;
     if (fTra && p.estado_tramite !== fTra) return false;
     if (fBus) {
@@ -1491,7 +1477,7 @@ function renderCola() {
   // ---- INSTALACIÓN ----
   const instActivos = activos.filter(p => p.estado_instalacion !== 'Instalada');
   const iRojos = [], iAmarillos = [], iVerdes = [];
- instActivos.forEach(p => {
+  instActivos.forEach(p => {
     const u = calcularUrgenciaInst(p);
     if (u === 'rojo')          iRojos.push(p);
     else if (u === 'amarillo') iAmarillos.push(p);
@@ -1499,7 +1485,7 @@ function renderCola() {
   });
   iRojos.sort((a, b) => fechaRef(a) - fechaRef(b));
   iAmarillos.sort((a, b) => fechaRef(a) - fechaRef(b));
-  iVerdes.sort((a, b) => parseFecha(a.fecha_programada_instalacion || a.fecha_inicio_instalacion) - parseFecha(b.fecha_programada_instalacion || b.fecha_inicio_instalacion));
+  iVerdes.sort((a, b) => parseFecha(a.fecha_programada_instalacion || a.fecha_inicio_instalacion || a.fecha_venta) - parseFecha(b.fecha_programada_instalacion || b.fecha_inicio_instalacion || b.fecha_venta));
 
   pintarColumnaCola('cola-i-rojo',     'cnt-i-rojo',     iRojos,     'rojo', 'inst');
   pintarColumnaCola('cola-i-amarillo', 'cnt-i-amarillo', iAmarillos, 'amarillo', 'inst');
@@ -1529,7 +1515,6 @@ function renderCola() {
 }
 
 function fechaRef(p) {
-  // Fecha de referencia para ordenar dentro de una zona: la más vieja primero
   if (p.fecha_inicio_instalacion) return parseFecha(p.fecha_inicio_instalacion);
   if (p.fecha_programada_instalacion) return parseFecha(p.fecha_programada_instalacion);
   if (p.fecha_venta) return parseFecha(p.fecha_venta);
@@ -1582,13 +1567,11 @@ function generarMetaCarta(p, zona) {
   const cuadrilla = p.cuadrilla === 'Otro' ? (p.cuadrilla_otro || 'Otro') : p.cuadrilla;
   const lineas = [];
 
-  // Línea 1: estado y cuadrilla
   let l1 = `<span>${estado}</span>`;
   if (cuadrilla) l1 += ` · <span>${escapeHtml(cuadrilla)}</span>`;
   else l1 += ` · <span class="${zona === 'rojo' ? 'alerta-roja' : 'alerta'}">Sin cuadrilla</span>`;
   lineas.push(l1);
 
-  // Línea 2: contexto temporal según estado
   if (estado === 'En instalación') {
     const dias = diasDesde(p.fecha_inicio_instalacion);
     if (dias !== null) {
@@ -1602,6 +1585,8 @@ function generarMetaCarta(p, zona) {
       else if (dias === 0) lineas.push(`<span class="alerta">Programada para hoy</span>`);
       else if (dias === 1) lineas.push(`<span class="alerta">Programada mañana</span>`);
       else                 lineas.push(`<span>Programada en ${dias} días · ${fmtFecha(p.fecha_programada_instalacion)}</span>`);
+    } else {
+      lineas.push(`<span class="alerta">Falta fecha programada</span>`);
     }
   } else if (estado === 'Pendiente') {
     const dias = diasDesde(p.fecha_venta);
@@ -1621,13 +1606,11 @@ function generarMetaCartaTramite(p, zona) {
   const estado = p.estado_tramite;
   const lineas = [];
 
-  // Línea 1: estado + SIRESI
   let l1 = `<span>${estado}</span>`;
   if (p.siresi) l1 += ` · <span class="mono" style="font-size:11px">SIRESI ${escapeHtml(p.siresi)}</span>`;
   else if (estado !== 'Sin iniciar') l1 += ` · <span class="alerta">Sin SIRESI capturado</span>`;
   lineas.push(l1);
 
-  // Línea 2: contexto temporal
   const diasV = diasDesde(p.fecha_venta);
   if (estado === 'Sin iniciar') {
     if (diasV !== null) {
@@ -1635,7 +1618,6 @@ function generarMetaCartaTramite(p, zona) {
       lineas.push(`<span class="${claseDias}">Sin iniciar · ${diasV} día${diasV===1?'':'s'} desde la venta</span>`);
     }
   } else if (estado === 'En trámite') {
-    // Cuello de botella: instalación lista pero trámite no
     if (p.estado_instalacion === 'Instalada' && p.fecha_terminacion) {
       const diasInst = diasDesde(p.fecha_terminacion);
       if (diasInst !== null && diasInst >= sla('tra_instalado_sin_aprobar_amarillo', 1)) {
@@ -1661,7 +1643,6 @@ function renderMetricas() {
       .filter(p => p.estado_instalacion === 'En instalación' && p.cuadrilla)
       .map(p => p.cuadrilla === 'Otro' ? p.cuadrilla_otro : p.cuadrilla)
   ).size;
-  // Instalados este mes
   const inicioMes = new Date(); inicioMes.setDate(1); inicioMes.setHours(0,0,0,0);
   const instMes = proyectos.filter(p => {
     if (p.estado_instalacion !== 'Instalada') return false;
@@ -1743,7 +1724,6 @@ function renderTablaTramite(lista) {
       ? Math.floor((Date.now() - new Date(p.fecha_inicio_tramite + 'T00:00:00')) / 86400000)
       : null;
 
-    // Celda de días según el estado del trámite
     let diasCell;
     if (p.estado_tramite === 'N/A') {
       diasCell = `<td class="mono" style="color:var(--ink-mute)">N/A</td>`;
@@ -1754,7 +1734,6 @@ function renderTablaTramite(lista) {
     } else if (p.estado_tramite === 'Sin iniciar') {
       diasCell = `<td class="cell-warn mono">Sin iniciar</td>`;
     } else {
-      // En trámite
       diasCell = diasTramite !== null
         ? `<td class="mono">${diasTramite} días</td>`
         : `<td class="cell-warn mono">Sin fecha de inicio</td>`;
@@ -1949,7 +1928,6 @@ async function openDrawer(id) {
     `}
   `;
 
-  // Footer siempre visible
   if (p.bloqueado) {
     $('#drawer-footer').innerHTML = `
       <span style="color:var(--warn); font-size:13px; margin-right:auto">🔒 Proyecto bloqueado</span>
@@ -1962,14 +1940,12 @@ async function openDrawer(id) {
     `;
   }
 
-  // Bindings del drawer (los que no son onclick directo)
   if (!p.bloqueado) {
     const cfeAdd = document.getElementById('cfe-add');
     const genAdd = document.getElementById('gen-add');
     if (cfeAdd) cfeAdd.onclick = () => agregarComentario('cfe');
     if (genAdd) genAdd.onclick = () => agregarComentario('gen');
 
-    // Cálculo automático de kW = (# paneles × potencia panel) / 1000
     const recalcularKW = () => {
       const np = document.getElementById('d-num-paneles');
       const pp = document.getElementById('d-pot-paneles');
@@ -1984,7 +1960,6 @@ async function openDrawer(id) {
     if (numP) numP.oninput = recalcularKW;
     if (potP) potP.oninput = recalcularKW;
 
-    // Selector de marcas
     const mP   = document.getElementById('d-marca-paneles');
     const mPi  = document.getElementById('d-marca-paneles-input');
     const mI   = document.getElementById('d-marca-inversor');
@@ -1999,27 +1974,26 @@ async function openDrawer(id) {
     const fTerm      = document.getElementById('d-fecha-term');
     const hoyStr = () => new Date().toISOString().slice(0, 10);
 
-    // Cuando se cambia el estado, autocompletar fechas si faltan
     if (estadoInst) estadoInst.addEventListener('change', () => {
       const nuevo = estadoInst.value;
       if (nuevo === 'En instalación' && fInicio && !fInicio.value) {
         fInicio.value = hoyStr();
+        if (fProg && !fProg.value) fProg.value = fInicio.value;
       }
       if (nuevo === 'Instalada' && fTerm && !fTerm.value) {
         fTerm.value = hoyStr();
-        // Si tampoco hay fecha de inicio, ponerla también (en una sola sesión instalaron y terminaron)
         if (fInicio && !fInicio.value) fInicio.value = hoyStr();
+        if (fProg && !fProg.value) fProg.value = fTerm.value;
       }
     });
 
-    // Cuando se cambia una fecha, autocompletar el estado si está atrasado
     if (fInicio) fInicio.addEventListener('change', () => {
       if (!fInicio.value || !estadoInst) return;
       const actual = estadoInst.value;
-      // Avanzar el estado si todavía está en una etapa anterior
       if (actual === 'Pendiente' || actual === 'Programada') {
         estadoInst.value = 'En instalación';
       }
+      if (fProg && !fProg.value) fProg.value = fInicio.value;
     });
 
     if (fTerm) fTerm.addEventListener('change', () => {
@@ -2028,11 +2002,12 @@ async function openDrawer(id) {
       if (actual === 'Pendiente' || actual === 'Programada' || actual === 'En instalación') {
         estadoInst.value = 'Instalada';
       }
+      if (fProg && !fProg.value) fProg.value = fTerm.value;
+      if (fInicio && !fInicio.value) fInicio.value = fTerm.value;
     });
 
-   if (fProg) fProg.addEventListener('change', () => {
+    if (fProg) fProg.addEventListener('change', () => {
       if (!fProg.value || !estadoInst) return;
-      // Solo avanzar de Pendiente a Programada; no degradar de En instalación
       if (estadoInst.value === 'Pendiente') {
         estadoInst.value = 'Programada';
       }
@@ -2048,7 +2023,6 @@ async function openDrawer(id) {
     });
   }
 
-  // Cargar bitácoras
   cargarBitacoras(id);
 }
 
@@ -2062,7 +2036,6 @@ function bindMarcaSelect(tipo, selectEl, inputEl) {
         const ok = await agregarAlCatalogo(tipo, marca, null);
         if (ok) {
           toast(`Marca "${marca}" guardada`, 'ok');
-          // Repoblar el select
           const opciones = ['<option value="">— elegir —</option>',
                             marcaOptionsHTML(tipo, marca),
                             '<option value="__nueva__">+ Agregar nueva marca…</option>'].join('');
@@ -2081,9 +2054,7 @@ function bindMarcaSelect(tipo, selectEl, inputEl) {
 
 function marcaOptionsHTML(tipo, seleccionada) {
   const lista = catalogoCache[tipo] || [];
-  // Marcas únicas
   const marcas = [...new Set(lista.map(x => x.marca))].sort();
-  // Si la seleccionada no está en el catálogo (caso heredado), agregarla
   if (seleccionada && !marcas.includes(seleccionada)) {
     marcas.unshift(seleccionada);
   }
@@ -2145,7 +2116,7 @@ async function guardarDrawer() {
 
   console.log('Guardando proyecto', currentDrawerId, cambios);
 
- // Alimentar el catálogo solo con la marca (sin potencia)
+  // Alimentar el catálogo solo con la marca (sin potencia)
   if (cambios.marca_paneles) {
     agregarAlCatalogo('panel', cambios.marca_paneles, null);
   }
@@ -2225,7 +2196,7 @@ async function renderMarcasConfig() {
       ${rows.length === 0 ? '<div style="color:var(--ink-mute);font-size:12px">Sin marcas guardadas.</div>' :
         rows.map(r => `
           <div class="sla-row" style="grid-template-columns: 1fr auto">
-           <div class="sla-desc">${escapeHtml(r.marca)}</div>
+            <div class="sla-desc">${escapeHtml(r.marca)}</div>
             <button class="btn btn-ghost btn-sm" data-borrar-marca="${r.id}" title="Borrar marca">🗑</button>
           </div>
         `).join('')}
@@ -2233,7 +2204,6 @@ async function renderMarcasConfig() {
   `;
   cont.innerHTML = lista('Marcas de paneles', paneles) + lista('Marcas de inversores', inversores);
 
-  // Bindings de borrado
   cont.querySelectorAll('[data-borrar-marca]').forEach(btn => {
     btn.onclick = async () => {
       const id = btn.dataset.borrarMarca;
@@ -2256,7 +2226,6 @@ async function guardarConfig() {
       actualizaciones.push({ clave: inp.dataset.clave, valor, actualizado_por: currentUser });
     }
   });
-  // Hacer upsert (uno por uno; son pocos)
   let errores = 0;
   for (const u of actualizaciones) {
     const { error } = await supa.from('sla_config')
@@ -2296,15 +2265,8 @@ async function resetConfig() {
 /* ============================================================
    HELPERS
    ============================================================ */
-function estadoClass(e) {
-  return {
-    'Pendiente':       'estado-pendiente',
-    'En trámite':      'estado-tramite',
-    'En instalación':  'estado-instalacion',
-    'Terminado':       'estado-terminado'
-  }[e] || 'estado-pendiente';
-}
 function parseFecha(f) {
+  if (!f) return new Date(0);
   const d = new Date(f + 'T00:00:00');
   return isNaN(d) ? new Date(f) : d;
 }

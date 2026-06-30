@@ -842,16 +842,14 @@ table.tabla {
           </div>
           <div class="cola-col-body" id="cola-i-amarillo"></div>
         </div>
-        <div class="cola-col" data-zona="verde">
+      <div class="cola-col" data-zona="verde">
           <div class="cola-col-header">
             <span class="urg-dot urg-verde"></span>
-            <span class="cola-col-title">Esta semana</span>
+            <span class="cola-col-title">Pendientes</span>
             <span class="cola-col-count" id="cnt-i-verde">0</span>
           </div>
           <div class="cola-col-body" id="cola-i-verde"></div>
         </div>
-      </div>
-    </div>
 
     <div class="cola-seccion">
       <div class="cola-seccion-titulo">Trámite CFE</div>
@@ -1493,17 +1491,11 @@ function renderCola() {
   // ---- INSTALACIÓN ----
   const instActivos = activos.filter(p => p.estado_instalacion !== 'Instalada');
   const iRojos = [], iAmarillos = [], iVerdes = [];
-  instActivos.forEach(p => {
+ instActivos.forEach(p => {
     const u = calcularUrgenciaInst(p);
     if (u === 'rojo')          iRojos.push(p);
     else if (u === 'amarillo') iAmarillos.push(p);
-    else if (u === 'verde') {
-      if (p.estado_instalacion === 'En instalación') iVerdes.push(p);
-      else if (p.estado_instalacion === 'Programada' && p.fecha_programada_instalacion) {
-        const dias = diasHasta(p.fecha_programada_instalacion);
-        if (dias !== null && dias >= 0 && dias <= 7) iVerdes.push(p);
-      }
-    }
+    else if (u === 'verde')    iVerdes.push(p);  // todo lo verde activo, sin filtro de fecha
   });
   iRojos.sort((a, b) => fechaRef(a) - fechaRef(b));
   iAmarillos.sort((a, b) => fechaRef(a) - fechaRef(b));
@@ -1564,7 +1556,7 @@ function pintarColumnaCola(bodyId, countId, lista, zona, tipo) {
     const msg = tipo === 'inst'
       ? (zona === 'rojo'     ? 'Sin atrasados 👍'
         : zona === 'amarillo' ? 'Nada por atender de inmediato'
-        : 'Sin instalaciones próximas')
+        : 'Sin pendientes')
       : (zona === 'rojo'     ? 'Sin trámites atrasados 👍'
         : zona === 'amarillo' ? 'Trámites sin urgencias'
         : 'Sin trámites recientes');

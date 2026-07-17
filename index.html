@@ -656,6 +656,74 @@ table.tabla {
 .combo-row { display: flex; gap: 6px; }
 .combo-row select { flex: 1; }
 
+/* ============================================================ EQUIPOS MÚLTIPLES */
+.equipos-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 6px;
+}
+.equipos-head h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-mute);
+  font-weight: 600;
+}
+.equipo-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 10px;
+  padding: 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+.equipo-row .field { margin-bottom: 0; }
+.equipo-row .combo-row { gap: 6px; }
+.equipo-borrar {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink-mute);
+  border-radius: var(--r);
+  cursor: pointer;
+  height: 38px;
+  width: 38px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.equipo-borrar:hover { color: var(--err); border-color: var(--err); }
+.equipo-vacio {
+  color: var(--ink-mute);
+  font-size: 12px;
+  font-style: italic;
+  padding: 10px 0;
+}
+.kw-total {
+  margin-top: 6px;
+  padding: 10px 14px;
+  background: rgba(245,197,24,0.08);
+  border: 1px solid var(--accent);
+  border-radius: var(--r);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+@media (max-width: 768px) {
+  .equipo-row { grid-template-columns: 1fr 1fr; }
+  .equipo-row .field:first-child { grid-column: 1 / -1; }
+  .equipo-borrar { width: 100%; }
+}
+
 .banner-bloqueado {
   background: rgba(251,146,60,0.1);
   border: 1px solid var(--warn);
@@ -778,7 +846,7 @@ table.tabla {
     <div class="login-brand">
       <img src="logo.png" alt="Tecnoden" style="height:32px; display:block">
     </div>
-   <h1 class="login-title">Producción</h1>
+    <h1 class="login-title">CRM Producción</h1>
     <p class="login-sub">Seguimiento de instalaciones solares</p>
 
     <div class="field">
@@ -1027,6 +1095,8 @@ const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 let currentUser = null;
 let proyectos   = [];
 let currentDrawerId = null;
+let drawerPaneles    = [];  // equipos del proyecto abierto en el drawer
+let drawerInversores = [];
 let sortState   = { field: 'actualizado_en', dir: 'desc' };
 let currentTab  = 'pendientes';
 let slaConfig   = {};
@@ -1775,6 +1845,10 @@ async function openDrawer(id) {
   const p = proyectos.find(x => x.id === id);
   if (!p) return;
 
+  // Cargar equipos desde JSON (o construir desde columnas viejas si el JSON está vacío)
+  drawerPaneles    = normalizarEquipos(p.paneles_json, p.marca_paneles, p.num_paneles, p.potencia_paneles);
+  drawerInversores = normalizarEquipos(p.inversores_json, p.marca_inversor, p.num_inversores, p.potencia_inversor);
+
   $('#d-titulo').textContent = (p.cotizacion_num ? `#${p.cotizacion_num} · ` : '') + (p.cliente_nombre || '(sin nombre)');
   $('#drawer').classList.add('open');
   $('#drawer-backdrop').classList.add('open');
@@ -1838,57 +1912,21 @@ async function openDrawer(id) {
     </div>
 
     <div class="section">
-      <h3>Datos técnicos · Paneles</h3>
-      <div class="grid-3">
-        <div class="field">
-          <label>Marca de paneles</label>
-          <div class="combo-row">
-            <select id="d-marca-paneles" ${ro}>
-              <option value="">— elegir —</option>
-              ${marcaOptionsHTML('panel', p.marca_paneles)}
-              <option value="__nueva__">+ Agregar nueva marca…</option>
-            </select>
-            <input value="${escapeAttr(p.marca_paneles)}" data-field="marca_paneles" id="d-marca-paneles-input" ${ro} class="hidden">
-          </div>
-        </div>
-        <div class="field">
-          <label># paneles</label>
-          <input type="number" value="${p.num_paneles || ''}" data-field="num_paneles" id="d-num-paneles" ${ro}>
-        </div>
-        <div class="field">
-          <label>Potencia por panel (W)</label>
-          <input type="number" step="any" value="${p.potencia_paneles || ''}" data-field="potencia_paneles" id="d-pot-paneles" ${ro}>
-        </div>
+      <div class="equipos-head">
+        <h3 style="border:none;margin:0;padding:0">Datos técnicos · Paneles</h3>
+        ${p.bloqueado ? '' : `<button class="btn btn-ghost btn-sm" id="add-panel">+ Agregar tipo</button>`}
       </div>
-      <div class="field" style="max-width:280px">
-        <label>kW del sistema (auto)</label>
-        <input type="number" step="0.01" value="${p.kw_sistema || ''}" data-field="kw_sistema" id="d-kw-sistema" ${ro} readonly style="background:var(--panel-2)">
-      </div>
+      <div id="lista-paneles"></div>
+      <div class="kw-total" id="kw-total-paneles">kW total del arreglo: — kW</div>
     </div>
 
     <div class="section">
-      <h3>Datos técnicos · Inversor</h3>
-      <div class="grid-3">
-        <div class="field">
-          <label>Marca de inversor</label>
-          <div class="combo-row">
-            <select id="d-marca-inversor" ${ro}>
-              <option value="">— elegir —</option>
-              ${marcaOptionsHTML('inversor', p.marca_inversor)}
-              <option value="__nueva__">+ Agregar nueva marca…</option>
-            </select>
-            <input value="${escapeAttr(p.marca_inversor)}" data-field="marca_inversor" id="d-marca-inversor-input" ${ro} class="hidden">
-          </div>
-        </div>
-        <div class="field">
-          <label># inversores</label>
-          <input type="number" value="${p.num_inversores || ''}" data-field="num_inversores" ${ro}>
-        </div>
-        <div class="field">
-          <label>Potencia de inversor (kW)</label>
-          <input type="number" step="any" value="${p.potencia_inversor || ''}" data-field="potencia_inversor" ${ro}>
-        </div>
+      <div class="equipos-head">
+        <h3 style="border:none;margin:0;padding:0">Datos técnicos · Inversores</h3>
+        ${p.bloqueado ? '' : `<button class="btn btn-ghost btn-sm" id="add-inversor">+ Agregar tipo</button>`}
       </div>
+      <div id="lista-inversores"></div>
+      <div class="kw-total" id="kw-total-inversores">Capacidad total de inversores: — kW</div>
     </div>
 
     <div class="section">
@@ -1946,26 +1984,17 @@ async function openDrawer(id) {
     if (cfeAdd) cfeAdd.onclick = () => agregarComentario('cfe');
     if (genAdd) genAdd.onclick = () => agregarComentario('gen');
 
-    const recalcularKW = () => {
-      const np = document.getElementById('d-num-paneles');
-      const pp = document.getElementById('d-pot-paneles');
-      const kw = document.getElementById('d-kw-sistema');
-      if (!np || !pp || !kw) return;
-      const n = parseFloat(np.value) || 0;
-      const w = parseFloat(pp.value) || 0;
-      if (n > 0 && w > 0) kw.value = ((n * w) / 1000).toFixed(2);
+    // Botones de agregar tipo de equipo
+    const addPanelBtn = document.getElementById('add-panel');
+    const addInvBtn   = document.getElementById('add-inversor');
+    if (addPanelBtn) addPanelBtn.onclick = () => {
+      drawerPaneles.push({ marca: '', cantidad: '', potencia: '' });
+      renderEquipos('panel');
     };
-    const numP = document.getElementById('d-num-paneles');
-    const potP = document.getElementById('d-pot-paneles');
-    if (numP) numP.oninput = recalcularKW;
-    if (potP) potP.oninput = recalcularKW;
-
-    const mP   = document.getElementById('d-marca-paneles');
-    const mPi  = document.getElementById('d-marca-paneles-input');
-    const mI   = document.getElementById('d-marca-inversor');
-    const mIi  = document.getElementById('d-marca-inversor-input');
-    if (mP && mPi) bindMarcaSelect('panel', mP, mPi);
-    if (mI && mIi) bindMarcaSelect('inversor', mI, mIi);
+    if (addInvBtn) addInvBtn.onclick = () => {
+      drawerInversores.push({ marca: '', cantidad: '', potencia: '' });
+      renderEquipos('inversor');
+    };
 
     // Sincronización estado de instalación ↔ fechas
     const estadoInst = document.getElementById('d-estado-inst');
@@ -2024,6 +2053,130 @@ async function openDrawer(id) {
   }
 
   cargarBitacoras(id);
+  renderEquipos('panel');
+  renderEquipos('inversor');
+}
+
+/* ============================================================
+   EQUIPOS MÚLTIPLES (paneles / inversores)
+   ============================================================ */
+// Normaliza: si hay JSON úsalo; si no, arma un arreglo con las columnas viejas
+function normalizarEquipos(jsonVal, marcaVieja, cantVieja, potVieja) {
+  let arr = [];
+  if (Array.isArray(jsonVal)) arr = jsonVal;
+  else if (typeof jsonVal === 'string' && jsonVal.trim()) {
+    try { arr = JSON.parse(jsonVal); } catch(e) { arr = []; }
+  }
+  if (arr.length === 0 && (marcaVieja || cantVieja || potVieja)) {
+    arr = [{ marca: marcaVieja || '', cantidad: cantVieja || '', potencia: potVieja || '' }];
+  }
+  // Copia defensiva
+  return arr.map(x => ({
+    marca: x.marca || '',
+    cantidad: x.cantidad != null ? x.cantidad : '',
+    potencia: x.potencia != null ? x.potencia : ''
+  }));
+}
+
+function renderEquipos(tipo) {
+  const esPanel = tipo === 'panel';
+  const lista = esPanel ? drawerPaneles : drawerInversores;
+  const contId = esPanel ? 'lista-paneles' : 'lista-inversores';
+  const cont = document.getElementById(contId);
+  if (!cont) return;
+
+  const p = proyectos.find(x => x.id === currentDrawerId);
+  const bloqueado = p && p.bloqueado;
+  const ro = bloqueado ? 'disabled' : '';
+  const unidadPot = esPanel ? 'W' : 'kW';
+  const labelCant = esPanel ? '# paneles' : '# inversores';
+
+  if (lista.length === 0) {
+    cont.innerHTML = `<div class="equipo-vacio">Sin ${esPanel ? 'paneles' : 'inversores'} agregados. ${bloqueado ? '' : 'Usa "+ Agregar tipo".'}</div>`;
+  } else {
+    cont.innerHTML = lista.map((eq, i) => `
+      <div class="equipo-row">
+        <div class="field">
+          <label>Marca</label>
+          <div class="combo-row">
+            <select ${ro} data-eq-tipo="${tipo}" data-eq-idx="${i}" data-eq-campo="marca-select">
+              <option value="">— elegir —</option>
+              ${marcaOptionsHTML(tipo, eq.marca)}
+              <option value="__nueva__">+ Nueva marca…</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>${labelCant}</label>
+          <input type="number" min="0" value="${eq.cantidad}" ${ro} data-eq-tipo="${tipo}" data-eq-idx="${i}" data-eq-campo="cantidad">
+        </div>
+        <div class="field">
+          <label>Potencia (${unidadPot})</label>
+          <input type="number" step="any" min="0" value="${eq.potencia}" ${ro} data-eq-tipo="${tipo}" data-eq-idx="${i}" data-eq-campo="potencia">
+        </div>
+        ${bloqueado ? '<div></div>' : `<button class="equipo-borrar" data-eq-tipo="${tipo}" data-eq-idx="${i}" data-eq-borrar title="Quitar">🗑</button>`}
+      </div>
+    `).join('');
+  }
+
+  // Bindings de cada campo
+  cont.querySelectorAll('[data-eq-campo]').forEach(el => {
+    const idx = parseInt(el.dataset.eqIdx);
+    const campo = el.dataset.eqCampo;
+    const arr = esPanel ? drawerPaneles : drawerInversores;
+
+    if (campo === 'marca-select') {
+      el.addEventListener('change', async () => {
+        if (el.value === '__nueva__') {
+          const nueva = prompt(`Nueva marca de ${tipo}:`);
+          if (nueva && nueva.trim()) {
+            const marca = nueva.trim();
+            await agregarAlCatalogo(tipo, marca, null);
+            arr[idx].marca = marca;
+          }
+          renderEquipos(tipo);
+        } else {
+          arr[idx].marca = el.value;
+        }
+      });
+    } else {
+      el.addEventListener('input', () => {
+        arr[idx][campo] = el.value === '' ? '' : parseFloat(el.value);
+        recalcularKWTotal(tipo);
+      });
+    }
+  });
+
+  // Bindings de borrar
+  cont.querySelectorAll('[data-eq-borrar]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.eqIdx);
+      const arr = esPanel ? drawerPaneles : drawerInversores;
+      arr.splice(idx, 1);
+      renderEquipos(tipo);
+    });
+  });
+
+  recalcularKWTotal(tipo);
+}
+
+function recalcularKWTotal(tipo) {
+  const esPanel = tipo === 'panel';
+  const lista = esPanel ? drawerPaneles : drawerInversores;
+  const totId = esPanel ? 'kw-total-paneles' : 'kw-total-inversores';
+  const el = document.getElementById(totId);
+  if (!el) return;
+
+  let kw = 0;
+  lista.forEach(eq => {
+    const cant = parseFloat(eq.cantidad) || 0;
+    const pot  = parseFloat(eq.potencia) || 0;
+    // Paneles: potencia en W → dividir entre 1000. Inversores: potencia ya en kW.
+    kw += esPanel ? (cant * pot) / 1000 : (cant * pot);
+  });
+
+  const etiqueta = esPanel ? 'kW total del arreglo' : 'Capacidad total de inversores';
+  el.textContent = `${etiqueta}: ${kw.toFixed(2)} kW`;
 }
 
 function bindMarcaSelect(tipo, selectEl, inputEl) {
@@ -2114,15 +2267,35 @@ async function guardarDrawer() {
     cambios[field] = v;
   });
 
+  // Limpiar equipos: quitar filas totalmente vacías
+  const panelesLimpios = drawerPaneles
+    .filter(eq => eq.marca || eq.cantidad || eq.potencia)
+    .map(eq => ({ marca: eq.marca || '', cantidad: parseFloat(eq.cantidad) || 0, potencia: parseFloat(eq.potencia) || 0 }));
+  const inversoresLimpios = drawerInversores
+    .filter(eq => eq.marca || eq.cantidad || eq.potencia)
+    .map(eq => ({ marca: eq.marca || '', cantidad: parseFloat(eq.cantidad) || 0, potencia: parseFloat(eq.potencia) || 0 }));
+
+  cambios.paneles_json    = panelesLimpios;
+  cambios.inversores_json = inversoresLimpios;
+
+  // kW total del sistema = suma de todos los paneles (W → kW)
+  let kwTotal = 0;
+  panelesLimpios.forEach(eq => { kwTotal += (eq.cantidad * eq.potencia) / 1000; });
+  cambios.kw_sistema = kwTotal > 0 ? parseFloat(kwTotal.toFixed(2)) : null;
+
+  // Mantener columnas viejas sincronizadas con el primer set (compatibilidad)
+  cambios.marca_paneles     = panelesLimpios[0]?.marca || null;
+  cambios.num_paneles       = panelesLimpios[0]?.cantidad || null;
+  cambios.potencia_paneles  = panelesLimpios[0]?.potencia || null;
+  cambios.marca_inversor    = inversoresLimpios[0]?.marca || null;
+  cambios.num_inversores    = inversoresLimpios[0]?.cantidad || null;
+  cambios.potencia_inversor = inversoresLimpios[0]?.potencia || null;
+
   console.log('Guardando proyecto', currentDrawerId, cambios);
 
-  // Alimentar el catálogo solo con la marca (sin potencia)
-  if (cambios.marca_paneles) {
-    agregarAlCatalogo('panel', cambios.marca_paneles, null);
-  }
-  if (cambios.marca_inversor) {
-    agregarAlCatalogo('inversor', cambios.marca_inversor, null);
-  }
+  // Alimentar el catálogo con las marcas usadas
+  panelesLimpios.forEach(eq => { if (eq.marca) agregarAlCatalogo('panel', eq.marca, null); });
+  inversoresLimpios.forEach(eq => { if (eq.marca) agregarAlCatalogo('inversor', eq.marca, null); });
 
   const ok = await actualizarProyecto(currentDrawerId, cambios);
   if (ok) {

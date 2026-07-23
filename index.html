@@ -9,13 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* ============================================================
-   CRM Producción Tecnoden — utilitario industrial
-   Tipografía: Inter Tight (UI) + JetBrains Mono (datos)
-   Paleta: grafito + acento amarillo solar
-   ============================================================ */
 :root {
-  /* Tema oscuro (default) */
   --bg:        #0f1115;
   --panel:    #161922;
   --panel-2: #1d2230;
@@ -24,34 +18,29 @@
   --ink:       #e8eaf0;
   --ink-dim: #9aa3b8;
   --ink-mute:#6b7390;
-  --accent:   #f5c518; /* amarillo solar */
+  --accent:   #f5c518;
   --accent-2:#ffd84d;
-  --accent-ink: #000;  /* texto sobre acento */
+  --accent-ink: #000;
   --ok:       #4ade80;
   --warn:    #fb923c;
   --err:     #f87171;
   --info:     #60a5fa;
   --shadow:  rgba(0,0,0,0.4);
   --row-hover: rgba(255,255,255,0.025);
-
-  /* Instalación (tonos cálidos) */
   --inst-pendiente:    #6b7390;
   --inst-programada:   #fb923c;
   --inst-encurso:      #f97316;
   --inst-instalada:    #4ade80;
-  /* Trámite (tonos fríos) */
   --tra-sin:           #6b7390;
   --tra-encurso:       #60a5fa;
   --tra-aprobado:      #4ade80;
   --tra-na:            #475569;
-
   --r-sm: 4px;
   --r:    6px;
   --r-lg: 10px;
 }
 
 [data-theme="light"] {
-  /* Tema claro estilo Google/Notion */
   --bg:        #ffffff;
   --panel:    #ffffff;
   --panel-2: #f6f7f9;
@@ -69,13 +58,10 @@
   --info:     #2563eb;
   --shadow:  rgba(15,23,42,0.08);
   --row-hover: rgba(15,23,42,0.04);
-
-  /* Instalación */
   --inst-pendiente:    #6b7280;
   --inst-programada:   #ea580c;
   --inst-encurso:      #c2410c;
   --inst-instalada:    #16a34a;
-  /* Trámite */
   --tra-sin:           #6b7280;
   --tra-encurso:       #2563eb;
   --tra-aprobado:      #16a34a;
@@ -95,16 +81,13 @@ body {
 }
 .mono { font-family: 'JetBrains Mono', monospace; }
 
-/* Transición suave al cambiar tema */
 .tabla-wrap, .drawer, .login-card, header.topbar, .filters,
 .field input, .field select, .field textarea, .btn, .estado-pill {
   transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
 
-/* Hide helpers */
 .hidden { display: none !important; }
 
-/* ============================================================ LOGIN */
 #login-screen {
   position: fixed; inset: 0;
   display: grid; place-items: center;
@@ -113,6 +96,7 @@ body {
 }
 .login-card {
   width: 360px;
+  max-width: 92vw;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
@@ -123,15 +107,6 @@ body {
   display: flex; align-items: center; gap: 10px;
   margin-bottom: 24px;
 }
-.login-brand-mark {
-  width: 28px; height: 28px;
-  background: var(--accent);
-  border-radius: var(--r-sm);
-  display: grid; place-items: center;
-  color: #000; font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
-}
-.login-brand-text { font-size: 13px; letter-spacing: 0.04em; color: var(--ink-dim); text-transform: uppercase; }
 .login-title { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
 .login-sub { font-size: 12px; color: var(--ink-mute); margin: 0 0 20px; }
 
@@ -191,7 +166,6 @@ body {
 
 .login-error { color: var(--err); font-size: 12px; margin-top: 8px; min-height: 16px; }
 
-/* ============================================================ APP SHELL */
 #app {
   display: grid;
   grid-template-rows: auto auto auto 1fr;
@@ -205,13 +179,8 @@ header.topbar {
   background: var(--panel);
   border-bottom: 1px solid var(--line);
 }
-.brand {
-  display: flex; align-items: center; gap: 12px;
-}
-.brand-logo {
-  height: 26px;
-  display: block;
-}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-logo { height: 26px; display: block; }
 .brand-sub {
   color: var(--ink-mute);
   font-size: 12px;
@@ -237,11 +206,7 @@ header.topbar {
   transition: background-color 0.15s, color 0.15s, border-color 0.15s;
   padding: 0;
 }
-.theme-toggle:hover {
-  color: var(--accent);
-  border-color: var(--accent);
-}
-/* Mostrar solo el ícono apropiado según el tema */
+.theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
 .theme-toggle .theme-icon-light { display: none; }
 .theme-toggle .theme-icon-dark  { display: block; }
 [data-theme="light"] .theme-toggle .theme-icon-light { display: block; }
@@ -256,7 +221,6 @@ header.topbar {
   border-radius: var(--r);
 }
 
-/* ============================================================ FILTERS BAR */
 .filters {
   display: flex; gap: 10px; align-items: center;
   padding: 12px 20px;
@@ -275,7 +239,6 @@ header.topbar {
 }
 .filter-label { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; }
 
-/* ============================================================ TABS */
 .tabs-bar {
   display: flex;
   gap: 2px;
@@ -298,12 +261,8 @@ header.topbar {
   transition: color 0.15s, border-color 0.15s;
 }
 .tab:hover { color: var(--ink-dim); }
-.tab.active {
-  color: var(--ink);
-  border-bottom-color: var(--accent);
-}
+.tab.active { color: var(--ink); border-bottom-color: var(--accent); }
 
-/* ============================================================ URGENCIA */
 .urg-dot {
   display: inline-block;
   width: 10px; height: 10px;
@@ -316,7 +275,6 @@ header.topbar {
 .urg-gris     { background: var(--ink-mute); opacity: 0.4; }
 .urg-cell { width: 28px; text-align: center; padding-left: 14px !important; padding-right: 4px !important; }
 
-/* ============================================================ VISTA DE COLA (Pendientes) */
 .cola-main {
   padding: 16px 20px;
   overflow: auto;
@@ -324,11 +282,7 @@ header.topbar {
   flex-direction: column;
   gap: 20px;
 }
-.cola-seccion {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+.cola-seccion { display: flex; flex-direction: column; gap: 8px; }
 .cola-seccion-titulo {
   font-size: 11px;
   letter-spacing: 0.12em;
@@ -397,10 +351,7 @@ header.topbar {
   cursor: pointer;
   transition: background-color 0.12s, border-color 0.12s;
 }
-.cola-card:hover {
-  background: var(--bg);
-  border-left-color: var(--accent);
-}
+.cola-card:hover { background: var(--bg); border-left-color: var(--accent); }
 .cola-col[data-zona="rojo"]     .cola-card { border-left-color: #ef4444; }
 .cola-col[data-zona="amarillo"] .cola-card { border-left-color: #f59e0b; }
 .cola-col[data-zona="verde"]    .cola-card { border-left-color: #4ade80; }
@@ -429,14 +380,8 @@ header.topbar {
   color: var(--ink-dim);
   line-height: 1.5;
 }
-.cola-card-meta .alerta {
-  color: var(--warn);
-  font-weight: 500;
-}
-.cola-card-meta .alerta-roja {
-  color: #ef4444;
-  font-weight: 600;
-}
+.cola-card-meta .alerta { color: var(--warn); font-weight: 500; }
+.cola-card-meta .alerta-roja { color: #ef4444; font-weight: 600; }
 .cola-empty {
   text-align: center;
   color: var(--ink-mute);
@@ -476,28 +421,19 @@ header.topbar {
   color: var(--ink-mute);
 }
 
-@media (max-width: 960px) {
-  .cola-wrap { grid-template-columns: 1fr; }
-}
-
-/* ============================================================ MAIN AREA */
 main {
   overflow: auto;
   padding: 16px 20px;
   align-self: start;
 }
 
-/* ============================================================ TABLE */
 .tabla-wrap {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   overflow: auto;
 }
-table.tabla {
-  width: 100%;
-  border-collapse: collapse;
-}
+table.tabla { width: 100%; border-collapse: collapse; }
 .tabla th {
   text-align: left;
   font-size: 11px;
@@ -524,7 +460,6 @@ table.tabla {
 .tabla tr { cursor: pointer; }
 .tabla tr:hover td { background: var(--row-hover); }
 .tabla tr.bloqueado td { color: var(--ink-mute); }
-
 .tabla td.cell-warn { color: var(--warn); font-style: italic; }
 
 .estado-pill {
@@ -537,12 +472,10 @@ table.tabla {
   border: 1px solid;
   white-space: nowrap;
 }
-/* Instalación */
 .inst-pendiente   { background: rgba(107,115,144,0.15); border-color: var(--inst-pendiente);  color: var(--inst-pendiente); }
 .inst-programada  { background: rgba(251,146,60,0.15);  border-color: var(--inst-programada); color: var(--inst-programada); }
 .inst-encurso     { background: rgba(249,115,22,0.18);  border-color: var(--inst-encurso);    color: var(--inst-encurso); }
 .inst-instalada   { background: rgba(74,222,128,0.15);  border-color: var(--inst-instalada);  color: var(--inst-instalada); }
-/* Trámite */
 .tra-sin          { background: rgba(107,115,144,0.15); border-color: var(--tra-sin);      color: var(--tra-sin); }
 .tra-encurso      { background: rgba(96,165,250,0.15);  border-color: var(--tra-encurso);  color: var(--tra-encurso); }
 .tra-aprobado     { background: rgba(74,222,128,0.15);  border-color: var(--tra-aprobado); color: var(--tra-aprobado); }
@@ -550,15 +483,9 @@ table.tabla {
 
 .lock-icon { color: var(--warn); font-size: 11px; margin-right: 6px; }
 
-/* ============================================================ EMPTY STATES */
-.empty {
-  padding: 60px 20px;
-  text-align: center;
-  color: var(--ink-mute);
-}
+.empty { padding: 60px 20px; text-align: center; color: var(--ink-mute); }
 .empty h3 { color: var(--ink-dim); margin: 0 0 8px; font-weight: 500; }
 
-/* ============================================================ DETAIL DRAWER */
 .drawer-backdrop {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.5);
@@ -608,9 +535,7 @@ table.tabla {
 }
 .drawer-footer button { position: relative; z-index: 11; }
 
-.section {
-  margin-bottom: 26px;
-}
+.section { margin-bottom: 26px; }
 .section h3 {
   font-size: 11px;
   text-transform: uppercase;
@@ -625,7 +550,6 @@ table.tabla {
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 
-/* Comentarios */
 .comentarios-list {
   display: flex; flex-direction: column; gap: 8px;
   margin-bottom: 10px;
@@ -656,7 +580,6 @@ table.tabla {
 .combo-row { display: flex; gap: 6px; }
 .combo-row select { flex: 1; }
 
-/* ============================================================ EQUIPOS MÚLTIPLES */
 .equipos-head {
   display: flex;
   align-items: center;
@@ -718,12 +641,6 @@ table.tabla {
   color: var(--ink);
 }
 
-@media (max-width: 768px) {
-  .equipo-row { grid-template-columns: 1fr 1fr; }
-  .equipo-row .field:first-child { grid-column: 1 / -1; }
-  .equipo-borrar { width: 100%; }
-}
-
 .banner-bloqueado {
   background: rgba(251,146,60,0.1);
   border: 1px solid var(--warn);
@@ -750,8 +667,9 @@ table.tabla {
   pointer-events: none;
 }
 .toast.show { opacity: 1; transform: translateY(0); }
+.toast.ok { border-color: var(--ok); }
+.toast.err { border-color: var(--err); }
 
-/* ============================================================ MODAL CONFIG */
 .modal-backdrop {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.6);
@@ -778,11 +696,7 @@ table.tabla {
   display: flex; align-items: center; gap: 12px;
 }
 .modal-head h2 { margin: 0; font-size: 16px; flex: 1; }
-.modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-}
+.modal-body { flex: 1; overflow-y: auto; padding: 20px; }
 .modal-footer {
   border-top: 1px solid var(--line);
   padding: 12px 20px;
@@ -826,27 +740,104 @@ table.tabla {
 }
 .sla-row input[type="number"]:focus { border-color: var(--accent); }
 .sla-row .sla-unit { color: var(--ink-mute); font-size: 11px; }
-.toast.ok { border-color: var(--ok); }
-.toast.err { border-color: var(--err); }
 
-/* Mobile */
+/* ============================================================ RESPONSIVE */
+
+/* Tablet: hasta 1024px */
+@media (max-width: 1024px) {
+  header.topbar { padding: 0 12px; gap: 10px; }
+  .tabs-bar { padding: 0 12px; }
+  main { padding: 12px; }
+  .cola-main { padding: 12px; }
+  .filters { padding: 10px 12px; }
+}
+
+/* Celular: hasta 768px */
 @media (max-width: 768px) {
-  .drawer { width: 100%; }
-  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  header.topbar { height: 48px; gap: 8px; padding: 0 10px; }
+  .brand-logo { height: 22px; }
+  .brand-sub { display: none; }
+  .topbar-right { gap: 6px; }
+  .user-chip { display: none; }
+  .theme-toggle { width: 30px; height: 30px; }
+
+  .tabs-bar { padding: 0 6px; overflow-x: auto; }
+  .tab { padding: 10px 12px; font-size: 12px; white-space: nowrap; }
+
   .filters { padding: 10px; gap: 6px; }
+  .filters select, .filters input { flex: 1 1 100%; min-width: 0 !important; width: 100%; }
+  .filter-label { flex-basis: 100%; }
+
+  .cola-main { padding: 10px; gap: 14px; }
+  .cola-wrap { grid-template-columns: 1fr; gap: 10px; }
+  .cola-col { min-height: auto; }
+  .cola-metricas { gap: 6px; padding: 10px; }
+  .metrica { flex: 1 1 40%; border-right: none; border-bottom: 1px solid var(--line); padding: 8px 10px; }
+  .metrica-num { font-size: 18px; }
+
+  .drawer { width: 100%; max-width: 100%; }
+  .drawer-body { padding: 14px; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .modal { width: 100%; max-width: 100%; height: 100%; max-height: 100%; top: 0; left: 0; transform: none; border-radius: 0; }
   main { padding: 10px; }
+
+  .equipo-row { grid-template-columns: 1fr 1fr; }
+  .equipo-row .field:first-child { grid-column: 1 / -1; }
+  .equipo-borrar { width: 100%; grid-column: 1 / -1; }
+
+  .tabla-wrap { border: none; background: transparent; overflow: visible; }
+  .tabla thead { display: none; }
+  .tabla, .tabla tbody, .tabla tr, .tabla td { display: block; width: 100%; }
+  .tabla tr {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--line-2);
+    border-radius: var(--r-lg);
+    margin-bottom: 10px;
+    padding: 4px 2px;
+  }
+  .tabla tr.urg-rojo-row     { border-left-color: #ef4444; }
+  .tabla tr.urg-amarillo-row { border-left-color: #f59e0b; }
+  .tabla tr.urg-verde-row    { border-left-color: #4ade80; }
+  .tabla tr:hover td { background: transparent; }
+  .tabla td {
+    border: none;
+    padding: 6px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    text-align: right;
+  }
+  .tabla td::before {
+    content: attr(data-label);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-mute);
+    font-weight: 500;
+    text-align: left;
+    flex-shrink: 0;
+  }
+  .tabla td.urg-cell { display: none; }
+  .tabla td[data-label="Cliente"] {
+    font-size: 15px;
+    font-weight: 500;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .tabla td[data-label="Cliente"]::before { display: none; }
 }
 </style>
 </head>
 <body>
 
-<!-- ============================================================ LOGIN -->
 <div id="login-screen">
   <form class="login-card" id="login-form" autocomplete="off">
     <div class="login-brand">
       <img src="logo.png" alt="Tecnoden" style="height:32px; display:block">
     </div>
-    <h1 class="login-title">CRM Producción</h1>
+    <h1 class="login-title">Producción</h1>
     <p class="login-sub">Seguimiento de instalaciones solares</p>
 
     <div class="field">
@@ -862,7 +853,6 @@ table.tabla {
   </form>
 </div>
 
-<!-- ============================================================ APP -->
 <div id="app" class="hidden">
 
   <header class="topbar">
@@ -890,7 +880,6 @@ table.tabla {
     <button class="tab" data-tab="tramite">Trámite CFE</button>
   </div>
 
-  <!-- ============ TAB PENDIENTES (Vista de Cola) ============ -->
   <main class="cola-main" data-tab-content="pendientes">
     <div class="cola-seccion">
       <div class="cola-seccion-titulo">Instalación</div>
@@ -955,7 +944,6 @@ table.tabla {
     <div class="cola-metricas" id="cola-metricas"></div>
   </main>
 
-  <!-- ============ TAB INSTALACIÓN ============ -->
   <div class="filters hidden" data-tab-content="instalacion">
     <span class="filter-label">Filtrar</span>
     <select id="f-inst">
@@ -1006,7 +994,6 @@ table.tabla {
     </div>
   </main>
 
-  <!-- ============ TAB TRÁMITE CFE ============ -->
   <div class="filters hidden" data-tab-content="tramite">
     <span class="filter-label">Filtrar</span>
     <select id="f-tramite">
@@ -1028,6 +1015,7 @@ table.tabla {
             <th data-sort="cliente_nombre">Cliente</th>
             <th data-sort="estado_tramite">Estado trámite</th>
             <th data-sort="siresi">SIRESI</th>
+            <th data-sort="fecha_inicio_tramite">Inicio trámite</th>
             <th data-sort="fecha_inicio_tramite">Días en trámite</th>
             <th data-sort="actualizado_en">Actualizado</th>
           </tr>
@@ -1039,7 +1027,6 @@ table.tabla {
 
 </div>
 
-<!-- ============================================================ DRAWER DETALLE -->
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
 <aside class="drawer" id="drawer">
   <div class="drawer-head">
@@ -1052,7 +1039,6 @@ table.tabla {
 
 <div class="toast" id="toast"></div>
 
-<!-- ============================================================ MODAL CONFIG -->
 <div class="modal-backdrop hidden" id="config-backdrop"></div>
 <div class="modal hidden" id="config-modal">
   <div class="modal-head">
@@ -1068,13 +1054,9 @@ table.tabla {
   </div>
 </div>
 <script>
-/* ============================================================
-   CONFIG
-   ============================================================ */
 const SUPABASE_URL  = 'https://lernzlbzrgatqkadwhas.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxlcm56bGJ6cmdhdHFrYWR3aGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxODgwMzgsImV4cCI6MjA5Mzc2NDAzOH0.G4AWdtTdxew0_EHGeHx28ijwHJOuyuXyVG0KbR-J8k4';
 
-// Usuarios V1
 const USERS = {
   german:  { pass: 'german123',  display: 'German'  },
   daniel:  { pass: 'daniel123',  display: 'Daniel'  },
@@ -1089,21 +1071,15 @@ const ESTADOS_TRAMITE = ['Sin iniciar', 'En trámite', 'Aprobado', 'N/A'];
 
 const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-/* ============================================================
-   STATE
-   ============================================================ */
 let currentUser = null;
 let proyectos   = [];
 let currentDrawerId = null;
-let drawerPaneles    = [];  // equipos del proyecto abierto en el drawer
+let drawerPaneles    = [];
 let drawerInversores = [];
 let sortState   = { field: 'actualizado_en', dir: 'desc' };
 let currentTab  = 'pendientes';
 let slaConfig   = {};
 
-/* ============================================================
-   LOGIN
-   ============================================================ */
 const $ = (sel) => document.querySelector(sel);
 
 $('#login-form').addEventListener('submit', (e) => {
@@ -1125,14 +1101,12 @@ $('#logout').addEventListener('click', () => {
   location.reload();
 });
 
-// Tema claro/oscuro
 function aplicarTema(tema) {
   document.documentElement.setAttribute('data-theme', tema);
   localStorage.setItem('crmp_theme', tema);
 }
 aplicarTema(localStorage.getItem('crmp_theme') || 'dark');
 
-// Auto-login si hay sesión
 const saved = localStorage.getItem('crmp_user');
 if (saved && USERS[saved]) {
   currentUser = USERS[saved].display;
@@ -1149,35 +1123,25 @@ function startApp() {
   loadProyectos();
 }
 
-// Cargar configuración de SLAs desde Supabase
 async function cargarSlaConfig() {
   const { data, error } = await supa.from('sla_config').select('*');
-  if (error) {
-    console.error('Error cargando SLA config:', error);
-    return;
-  }
+  if (error) { console.error('Error cargando SLA config:', error); return; }
   slaConfig = {};
   (data || []).forEach(row => { slaConfig[row.clave] = row.valor; });
   if (proyectos.length > 0) render();
 }
 
-// Helper para leer un SLA con default por si no cargó
 function sla(clave, fallback) {
   const v = slaConfig[clave];
   return (typeof v === 'number') ? v : (fallback || 0);
 }
 
-/* ============================================================
-   UI BINDINGS
-   ============================================================ */
 function bindUI() {
-  // Toggle de tema
   $('#theme-toggle').addEventListener('click', () => {
     const actual = document.documentElement.getAttribute('data-theme') || 'dark';
     aplicarTema(actual === 'dark' ? 'light' : 'dark');
   });
 
-  // Configuración (engranaje)
   $('#config-toggle').addEventListener('click', abrirConfig);
   $('#config-close').addEventListener('click', cerrarConfig);
   $('#config-backdrop').addEventListener('click', cerrarConfig);
@@ -1189,23 +1153,19 @@ function bindUI() {
     if (btn.dataset.configAction === 'reset') resetConfig();
   });
 
-  // Tabs
   document.querySelectorAll('.tab').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  // Filtros Instalación
   ['f-inst', 'f-cuadrilla', 'f-urgencia', 'f-busqueda'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', render);
   });
-  // Filtros Trámite
   ['f-tramite', 'f-busqueda-t'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', render);
   });
 
-  // Click en filas de ambas tablas (delegación)
   ['tabla-body-inst', 'tabla-body-tra'].forEach(id => {
     const tb = document.getElementById(id);
     if (tb) tb.addEventListener('click', (e) => {
@@ -1214,7 +1174,6 @@ function bindUI() {
     });
   });
 
-  // Click en cartas de la cola (delegación)
   ['cola-i-rojo', 'cola-i-amarillo', 'cola-i-verde', 'cola-t-rojo', 'cola-t-amarillo', 'cola-t-verde'].forEach(id => {
     const col = document.getElementById(id);
     if (col) col.addEventListener('click', (e) => {
@@ -1223,7 +1182,6 @@ function bindUI() {
     });
   });
 
-  // Footer del drawer (delegación)
   $('#drawer-footer').addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
@@ -1231,7 +1189,6 @@ function bindUI() {
     if (btn.dataset.action === 'close') closeDrawer();
   });
 
-  // Sort de la tabla
   document.querySelectorAll('.tabla th[data-sort]').forEach(th => {
     th.addEventListener('click', () => {
       const campo = th.dataset.sort;
@@ -1245,11 +1202,9 @@ function bindUI() {
     });
   });
 
-  // Drawer
   $('#d-close').addEventListener('click', closeDrawer);
   $('#drawer-backdrop').addEventListener('click', closeDrawer);
 
-  // Atajo de teclado: Ctrl/Cmd + S para guardar mientras el drawer está abierto
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
       const saveBtn = document.querySelector('#drawer-footer button[data-action="save"]');
@@ -1264,18 +1219,12 @@ function bindUI() {
   });
 }
 
-/* ============================================================
-   DATA
-   ============================================================ */
 async function loadProyectos() {
   const { data, error } = await supa
     .from('proyectos')
     .select('*')
     .order('actualizado_en', { ascending: false });
-  if (error) {
-    toast('Error cargando proyectos: ' + error.message, 'err');
-    return;
-  }
+  if (error) { toast('Error cargando proyectos: ' + error.message, 'err'); return; }
   proyectos = data || [];
   render();
 }
@@ -1286,18 +1235,13 @@ async function loadComentarios(proyectoId, tabla) {
     .select('*')
     .eq('proyecto_id', proyectoId)
     .order('creado_en', { ascending: false });
-  if (error) {
-    toast('Error cargando comentarios: ' + error.message, 'err');
-    return [];
-  }
+  if (error) { toast('Error cargando comentarios: ' + error.message, 'err'); return []; }
   return data || [];
 }
 
 async function addComentario(tabla, proyectoId, comentario) {
   const { error } = await supa.from(tabla).insert({
-    proyecto_id: proyectoId,
-    autor: currentUser,
-    comentario
+    proyecto_id: proyectoId, autor: currentUser, comentario
   });
   if (error) { toast('Error: ' + error.message, 'err'); return false; }
   return true;
@@ -1305,27 +1249,16 @@ async function addComentario(tabla, proyectoId, comentario) {
 
 async function actualizarProyecto(id, cambios) {
   const { data, error } = await supa.from('proyectos').update(cambios).eq('id', id).select();
-  if (error) {
-    console.error('Error actualizando proyecto:', error);
-    toast('Error: ' + error.message, 'err');
-    return false;
-  }
+  if (error) { console.error('Error actualizando proyecto:', error); toast('Error: ' + error.message, 'err'); return false; }
   console.log('Proyecto actualizado:', data);
   return true;
 }
 
-// Catálogo de equipos (marcas)
 let catalogoCache = { panel: [], inversor: [] };
 
 async function cargarCatalogo() {
-  const { data, error } = await supa
-    .from('catalogo_equipos')
-    .select('*')
-    .order('marca');
-  if (error) {
-    console.error('Error cargando catálogo:', error);
-    return;
-  }
+  const { data, error } = await supa.from('catalogo_equipos').select('*').order('marca');
+  if (error) { console.error('Error cargando catálogo:', error); return; }
   catalogoCache.panel    = (data || []).filter(x => x.tipo === 'panel');
   catalogoCache.inversor = (data || []).filter(x => x.tipo === 'inversor');
 }
@@ -1335,20 +1268,11 @@ async function agregarAlCatalogo(tipo, marca, potencia) {
   const { error } = await supa.from('catalogo_equipos').insert({
     tipo, marca, potencia: potencia || null, creado_por: currentUser
   });
-  // 23505 = unique_violation → ya existe, lo ignoramos
-  if (error && error.code !== '23505') {
-    console.error('Error agregando al catálogo:', error);
-    return false;
-  }
-  if (!error) {
-    await cargarCatalogo();
-  }
+  if (error && error.code !== '23505') { console.error('Error agregando al catálogo:', error); return false; }
+  if (!error) { await cargarCatalogo(); }
   return true;
 }
 
-/* ============================================================
-   TABS
-   ============================================================ */
 function switchTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.tab').forEach(b => {
@@ -1360,15 +1284,11 @@ function switchTab(tab) {
   render();
 }
 
-/* ============================================================
-   URGENCIA (Instalación)
-   ============================================================ */
 function calcularUrgenciaInst(p) {
   if (!p) return 'gris';
   const estado = p.estado_instalacion;
   if (estado === 'Instalada') return 'gris';
 
-  // Regla 4: En instalación prolongada
   if (estado === 'En instalación') {
     const dias = diasDesde(p.fecha_inicio_instalacion);
     if (dias !== null) {
@@ -1379,7 +1299,6 @@ function calcularUrgenciaInst(p) {
     return 'amarillo';
   }
 
-  // Regla 3: Programada / atrasada
   if (estado === 'Programada') {
     const dias = diasHasta(p.fecha_programada_instalacion);
     if (dias !== null) {
@@ -1387,11 +1306,9 @@ function calcularUrgenciaInst(p) {
       if (dias <= sla('inst_programada_amarillo', 2)) return 'amarillo';
       return 'verde';
     }
-    // Programada pero sin fecha puesta: cae en verde (Pendientes) para que no desaparezca
     return 'verde';
   }
 
-  // Reglas 1 y 2: Pendiente
   if (estado === 'Pendiente') {
     const diasDesdeVenta = diasDesde(p.fecha_venta);
     const tieneCuadrilla = !!p.cuadrilla;
@@ -1417,13 +1334,11 @@ function calcularUrgenciaInst(p) {
   return 'gris';
 }
 
-// Urgencia para el trámite CFE
 function calcularUrgenciaTra(p) {
   if (!p) return 'gris';
   const estado = p.estado_tramite;
   if (estado === 'Aprobado' || estado === 'N/A') return 'gris';
 
-  // Regla 1: Sin iniciar tras la venta
   if (estado === 'Sin iniciar') {
     const dias = diasDesde(p.fecha_venta);
     if (dias !== null) {
@@ -1434,7 +1349,6 @@ function calcularUrgenciaTra(p) {
     return 'verde';
   }
 
-  // Regla 3: En trámite con instalación ya terminada (cuello de botella)
   if (estado === 'En trámite' && p.estado_instalacion === 'Instalada' && p.fecha_terminacion) {
     const diasDesdeInst = diasDesde(p.fecha_terminacion);
     if (diasDesdeInst !== null) {
@@ -1443,13 +1357,11 @@ function calcularUrgenciaTra(p) {
     }
   }
 
-  // Regla 4: Trámite total muy largo (cuenta desde la venta)
   if (estado === 'En trámite') {
     const diasTotal = diasDesde(p.fecha_venta);
     if (diasTotal !== null && diasTotal >= sla('tra_total_rojo', 90)) return 'rojo';
   }
 
-  // Regla 2: Sin movimiento del SIRESI
   if (estado === 'En trámite') {
     const ult = p.ultima_actividad_siresi || p.actualizado_en;
     const diasSinMov = Math.floor((Date.now() - new Date(ult)) / 86400000);
@@ -1457,12 +1369,9 @@ function calcularUrgenciaTra(p) {
     if (diasSinMov >= sla('tra_sin_movimiento_amarillo', 15)) return 'amarillo';
   }
 
-  // Regla 4 cont: total amarillo
   if (estado === 'En trámite') {
     const diasTotal = diasDesde(p.fecha_venta);
-    if (diasTotal !== null && diasTotal >= sla('tra_total_amarillo', 60)) {
-      return 'amarillo';
-    }
+    if (diasTotal !== null && diasTotal >= sla('tra_total_amarillo', 60)) return 'amarillo';
     return 'verde';
   }
 
@@ -1481,9 +1390,6 @@ function urgTitulo(nivel) {
   }[nivel] || '';
 }
 
-/* ============================================================
-   FILTROS
-   ============================================================ */
 function aplicarFiltrosInstalacion(lista) {
   const fInst = document.getElementById('f-inst')?.value || '';
   const fCua  = document.getElementById('f-cuadrilla')?.value || '';
@@ -1520,9 +1426,6 @@ function aplicarFiltrosTramite(lista) {
   });
 }
 
-/* ============================================================
-   RENDER
-   ============================================================ */
 function render() {
   if (currentTab === 'pendientes') {
     renderCola();
@@ -1538,20 +1441,16 @@ function render() {
   actualizarHeadersSort();
 }
 
-/* ============================================================
-   VISTA DE COLA (tab Pendientes)
-   ============================================================ */
 function renderCola() {
   const activos = proyectos.filter(p => !p.bloqueado);
 
-  // ---- INSTALACIÓN ----
   const instActivos = activos.filter(p => p.estado_instalacion !== 'Instalada');
   const iRojos = [], iAmarillos = [], iVerdes = [];
   instActivos.forEach(p => {
     const u = calcularUrgenciaInst(p);
     if (u === 'rojo')          iRojos.push(p);
     else if (u === 'amarillo') iAmarillos.push(p);
-    else if (u === 'verde')    iVerdes.push(p);  // todo lo verde activo, sin filtro de fecha
+    else if (u === 'verde')    iVerdes.push(p);
   });
   iRojos.sort((a, b) => fechaRef(a) - fechaRef(b));
   iAmarillos.sort((a, b) => fechaRef(a) - fechaRef(b));
@@ -1561,7 +1460,6 @@ function renderCola() {
   pintarColumnaCola('cola-i-amarillo', 'cnt-i-amarillo', iAmarillos, 'amarillo', 'inst');
   pintarColumnaCola('cola-i-verde',    'cnt-i-verde',    iVerdes,    'verde', 'inst');
 
-  // ---- TRÁMITE CFE ----
   const traActivos = activos.filter(p => p.estado_tramite !== 'Aprobado' && p.estado_tramite !== 'N/A');
   const tRojos = [], tAmarillos = [], tVerdes = [];
   traActivos.forEach(p => {
@@ -1761,24 +1659,24 @@ function renderTablaInstalacion(lista) {
   body.innerHTML = lista.map(p => {
     const cuadrilla = p.cuadrilla === 'Otro' ? (p.cuadrilla_otro || 'Otro') : p.cuadrilla;
     const cuadrillaCell = cuadrilla
-      ? `<td class="mono" style="font-size:12px">${escapeHtml(cuadrilla)}</td>`
-      : `<td class="cell-warn mono" style="font-size:12px">Sin asignar</td>`;
+      ? `<td data-label="Cuadrilla" class="mono" style="font-size:12px">${escapeHtml(cuadrilla)}</td>`
+      : `<td data-label="Cuadrilla" class="cell-warn mono" style="font-size:12px">Sin asignar</td>`;
     const fechaCell = p.fecha_programada_instalacion
-      ? `<td class="mono">${fmtFecha(p.fecha_programada_instalacion)}</td>`
-      : `<td class="cell-warn mono">Sin fecha</td>`;
+      ? `<td data-label="Programada" class="mono">${fmtFecha(p.fecha_programada_instalacion)}</td>`
+      : `<td data-label="Programada" class="cell-warn mono">Sin fecha</td>`;
     const urg = calcularUrgenciaInst(p);
-    return `<tr class="${p.bloqueado ? 'bloqueado' : ''}" data-id="${p.id}">
+    return `<tr class="${p.bloqueado ? 'bloqueado' : ''} urg-${urg}-row" data-id="${p.id}">
       <td class="urg-cell">${urgIcono(urg)}</td>
-      <td class="mono" style="color:var(--ink-mute)">${p.cotizacion_num ? '#' + p.cotizacion_num : '—'}</td>
-      <td>${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}</td>
-      <td><span class="estado-pill ${classInst(p.estado_instalacion)}">${p.estado_instalacion || '—'}</span></td>
+      <td data-label="#" class="mono" style="color:var(--ink-mute)">${p.cotizacion_num ? '#' + p.cotizacion_num : '—'}</td>
+      <td data-label="Cliente">${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}</td>
+      <td data-label="Estado"><span class="estado-pill ${classInst(p.estado_instalacion)}">${p.estado_instalacion || '—'}</span></td>
       ${cuadrillaCell}
-      <td class="mono">${p.kw_sistema ? p.kw_sistema + ' kW' : '—'}</td>
+      <td data-label="kW" class="mono">${p.kw_sistema ? p.kw_sistema + ' kW' : '—'}</td>
       ${fechaCell}
-      <td class="mono">${fmtFecha(p.fecha_inicio_instalacion)}</td>
-      <td class="mono">${fmtFecha(p.fecha_terminacion)}</td>
-      <td>${escapeHtml(p.asesor_original || '—')}</td>
-      <td class="mono" style="font-size:11px; color:var(--ink-mute)">${fmtRelativo(p.actualizado_en)}</td>
+      <td data-label="Inicio" class="mono">${fmtFecha(p.fecha_inicio_instalacion)}</td>
+      <td data-label="Terminación" class="mono">${fmtFecha(p.fecha_terminacion)}</td>
+      <td data-label="Asesor">${escapeHtml(p.asesor_original || '—')}</td>
+      <td data-label="Actualizado" class="mono" style="font-size:11px; color:var(--ink-mute)">${fmtRelativo(p.actualizado_en)}</td>
     </tr>`;
   }).join('');
 }
@@ -1786,7 +1684,7 @@ function renderTablaInstalacion(lista) {
 function renderTablaTramite(lista) {
   const body = $('#tabla-body-tra');
   if (lista.length === 0) {
-    body.innerHTML = `<tr><td colspan="6"><div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div></td></tr>`;
+    body.innerHTML = `<tr><td colspan="7"><div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div></td></tr>`;
     return;
   }
   body.innerHTML = lista.map(p => {
@@ -1796,26 +1694,38 @@ function renderTablaTramite(lista) {
 
     let diasCell;
     if (p.estado_tramite === 'N/A') {
-      diasCell = `<td class="mono" style="color:var(--ink-mute)">N/A</td>`;
+      diasCell = `<td data-label="Días en trámite" class="mono" style="color:var(--ink-mute)">N/A</td>`;
     } else if (p.estado_tramite === 'Aprobado') {
       diasCell = diasTramite !== null
-        ? `<td class="mono">${diasTramite} días</td>`
-        : `<td class="mono" style="color:var(--ink-mute)">Aprobado</td>`;
+        ? `<td data-label="Días en trámite" class="mono">${diasTramite} días</td>`
+        : `<td data-label="Días en trámite" class="mono" style="color:var(--ink-mute)">Aprobado</td>`;
     } else if (p.estado_tramite === 'Sin iniciar') {
-      diasCell = `<td class="cell-warn mono">Sin iniciar</td>`;
+      diasCell = `<td data-label="Días en trámite" class="cell-warn mono">Sin iniciar</td>`;
     } else {
       diasCell = diasTramite !== null
-        ? `<td class="mono">${diasTramite} días</td>`
-        : `<td class="cell-warn mono">Sin fecha de inicio</td>`;
+        ? `<td data-label="Días en trámite" class="mono">${diasTramite} días</td>`
+        : `<td data-label="Días en trámite" class="cell-warn mono">Sin fecha de inicio</td>`;
     }
 
-    return `<tr class="${p.bloqueado ? 'bloqueado' : ''}" data-id="${p.id}">
-      <td class="mono" style="color:var(--ink-mute)">${p.cotizacion_num ? '#' + p.cotizacion_num : '—'}</td>
-      <td>${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}</td>
-      <td><span class="estado-pill ${classTra(p.estado_tramite)}">${p.estado_tramite || '—'}</span></td>
-      <td class="mono">${escapeHtml(p.siresi || '—')}</td>
+    // Fecha de inicio del trámite
+    let inicioCell;
+    if (p.estado_tramite === 'N/A') {
+      inicioCell = `<td data-label="Inicio trámite" class="mono" style="color:var(--ink-mute)">N/A</td>`;
+    } else if (p.fecha_inicio_tramite) {
+      inicioCell = `<td data-label="Inicio trámite" class="mono">${fmtFechaLarga(p.fecha_inicio_tramite)}</td>`;
+    } else {
+      inicioCell = `<td data-label="Inicio trámite" class="cell-warn mono">—</td>`;
+    }
+
+    const urg = calcularUrgenciaTra(p);
+    return `<tr class="${p.bloqueado ? 'bloqueado' : ''} urg-${urg}-row" data-id="${p.id}">
+      <td data-label="#" class="mono" style="color:var(--ink-mute)">${p.cotizacion_num ? '#' + p.cotizacion_num : '—'}</td>
+      <td data-label="Cliente">${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}</td>
+      <td data-label="Estado"><span class="estado-pill ${classTra(p.estado_tramite)}">${p.estado_tramite || '—'}</span></td>
+      <td data-label="SIRESI" class="mono">${escapeHtml(p.siresi || '—')}</td>
+      ${inicioCell}
       ${diasCell}
-      <td class="mono" style="font-size:11px; color:var(--ink-mute)">${fmtRelativo(p.actualizado_en)}</td>
+      <td data-label="Actualizado" class="mono" style="font-size:11px; color:var(--ink-mute)">${fmtRelativo(p.actualizado_en)}</td>
     </tr>`;
   }).join('');
 }
@@ -1837,15 +1747,11 @@ function classTra(estado) {
   }[estado] || 'tra-sin';
 }
 
-/* ============================================================
-   DRAWER DETALLE
-   ============================================================ */
 async function openDrawer(id) {
   currentDrawerId = id;
   const p = proyectos.find(x => x.id === id);
   if (!p) return;
 
-  // Cargar equipos desde JSON (o construir desde columnas viejas si el JSON está vacío)
   drawerPaneles    = normalizarEquipos(p.paneles_json, p.marca_paneles, p.num_paneles, p.potencia_paneles);
   drawerInversores = normalizarEquipos(p.inversores_json, p.marca_inversor, p.num_inversores, p.potencia_inversor);
 
@@ -1958,12 +1864,6 @@ async function openDrawer(id) {
         </div>
       `}
     </div>
-
-    ${p.bloqueado ? '' : `
-      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px">
-        <span style="font-size:11px; color:var(--ink-mute); align-self:center">Usa los botones de abajo para guardar →</span>
-      </div>
-    `}
   `;
 
   if (p.bloqueado) {
@@ -1984,7 +1884,6 @@ async function openDrawer(id) {
     if (cfeAdd) cfeAdd.onclick = () => agregarComentario('cfe');
     if (genAdd) genAdd.onclick = () => agregarComentario('gen');
 
-    // Botones de agregar tipo de equipo
     const addPanelBtn = document.getElementById('add-panel');
     const addInvBtn   = document.getElementById('add-inversor');
     if (addPanelBtn) addPanelBtn.onclick = () => {
@@ -1996,7 +1895,6 @@ async function openDrawer(id) {
       renderEquipos('inversor');
     };
 
-    // Sincronización estado de instalación ↔ fechas
     const estadoInst = document.getElementById('d-estado-inst');
     const fProg      = document.getElementById('d-fecha-prog');
     const fInicio    = document.getElementById('d-fecha-inicio');
@@ -2042,7 +1940,6 @@ async function openDrawer(id) {
       }
     });
 
-    // Sincronización del trámite CFE: al pasar a "En trámite", poner fecha de inicio si falta
     const estadoTra = document.getElementById('d-estado-tra');
     const fTramite  = document.getElementById('d-fecha-tramite');
     if (estadoTra) estadoTra.addEventListener('change', () => {
@@ -2057,10 +1954,6 @@ async function openDrawer(id) {
   renderEquipos('inversor');
 }
 
-/* ============================================================
-   EQUIPOS MÚLTIPLES (paneles / inversores)
-   ============================================================ */
-// Normaliza: si hay JSON úsalo; si no, arma un arreglo con las columnas viejas
 function normalizarEquipos(jsonVal, marcaVieja, cantVieja, potVieja) {
   let arr = [];
   if (Array.isArray(jsonVal)) arr = jsonVal;
@@ -2070,7 +1963,6 @@ function normalizarEquipos(jsonVal, marcaVieja, cantVieja, potVieja) {
   if (arr.length === 0 && (marcaVieja || cantVieja || potVieja)) {
     arr = [{ marca: marcaVieja || '', cantidad: cantVieja || '', potencia: potVieja || '' }];
   }
-  // Copia defensiva
   return arr.map(x => ({
     marca: x.marca || '',
     cantidad: x.cantidad != null ? x.cantidad : '',
@@ -2119,7 +2011,6 @@ function renderEquipos(tipo) {
     `).join('');
   }
 
-  // Bindings de cada campo
   cont.querySelectorAll('[data-eq-campo]').forEach(el => {
     const idx = parseInt(el.dataset.eqIdx);
     const campo = el.dataset.eqCampo;
@@ -2147,7 +2038,6 @@ function renderEquipos(tipo) {
     }
   });
 
-  // Bindings de borrar
   cont.querySelectorAll('[data-eq-borrar]').forEach(btn => {
     btn.addEventListener('click', () => {
       const idx = parseInt(btn.dataset.eqIdx);
@@ -2171,38 +2061,11 @@ function recalcularKWTotal(tipo) {
   lista.forEach(eq => {
     const cant = parseFloat(eq.cantidad) || 0;
     const pot  = parseFloat(eq.potencia) || 0;
-    // Paneles: potencia en W → dividir entre 1000. Inversores: potencia ya en kW.
     kw += esPanel ? (cant * pot) / 1000 : (cant * pot);
   });
 
   const etiqueta = esPanel ? 'kW total del arreglo' : 'Capacidad total de inversores';
   el.textContent = `${etiqueta}: ${kw.toFixed(2)} kW`;
-}
-
-function bindMarcaSelect(tipo, selectEl, inputEl) {
-  selectEl.addEventListener('change', async () => {
-    const v = selectEl.value;
-    if (v === '__nueva__') {
-      const nueva = prompt(`Nueva marca de ${tipo}:`);
-      if (nueva && nueva.trim()) {
-        const marca = nueva.trim();
-        const ok = await agregarAlCatalogo(tipo, marca, null);
-        if (ok) {
-          toast(`Marca "${marca}" guardada`, 'ok');
-          const opciones = ['<option value="">— elegir —</option>',
-                            marcaOptionsHTML(tipo, marca),
-                            '<option value="__nueva__">+ Agregar nueva marca…</option>'].join('');
-          selectEl.innerHTML = opciones;
-          selectEl.value = marca;
-          inputEl.value = marca;
-        }
-      } else {
-        selectEl.value = inputEl.value || '';
-      }
-    } else {
-      inputEl.value = v;
-    }
-  });
 }
 
 function marcaOptionsHTML(tipo, seleccionada) {
@@ -2257,7 +2120,6 @@ async function guardarDrawer() {
   document.querySelectorAll('#drawer-body [data-field]').forEach(el => {
     let v = el.value;
     const field = el.dataset.field;
-
     if (v === '' || v === undefined) {
       v = null;
     } else if (el.type === 'number') {
@@ -2267,7 +2129,6 @@ async function guardarDrawer() {
     cambios[field] = v;
   });
 
-  // Limpiar equipos: quitar filas totalmente vacías
   const panelesLimpios = drawerPaneles
     .filter(eq => eq.marca || eq.cantidad || eq.potencia)
     .map(eq => ({ marca: eq.marca || '', cantidad: parseFloat(eq.cantidad) || 0, potencia: parseFloat(eq.potencia) || 0 }));
@@ -2278,12 +2139,10 @@ async function guardarDrawer() {
   cambios.paneles_json    = panelesLimpios;
   cambios.inversores_json = inversoresLimpios;
 
-  // kW total del sistema = suma de todos los paneles (W → kW)
   let kwTotal = 0;
   panelesLimpios.forEach(eq => { kwTotal += (eq.cantidad * eq.potencia) / 1000; });
   cambios.kw_sistema = kwTotal > 0 ? parseFloat(kwTotal.toFixed(2)) : null;
 
-  // Mantener columnas viejas sincronizadas con el primer set (compatibilidad)
   cambios.marca_paneles     = panelesLimpios[0]?.marca || null;
   cambios.num_paneles       = panelesLimpios[0]?.cantidad || null;
   cambios.potencia_paneles  = panelesLimpios[0]?.potencia || null;
@@ -2293,7 +2152,6 @@ async function guardarDrawer() {
 
   console.log('Guardando proyecto', currentDrawerId, cambios);
 
-  // Alimentar el catálogo con las marcas usadas
   panelesLimpios.forEach(eq => { if (eq.marca) agregarAlCatalogo('panel', eq.marca, null); });
   inversoresLimpios.forEach(eq => { if (eq.marca) agregarAlCatalogo('inversor', eq.marca, null); });
 
@@ -2311,9 +2169,6 @@ function closeDrawer() {
   currentDrawerId = null;
 }
 
-/* ============================================================
-   MODAL DE CONFIGURACIÓN DE SLAs
-   ============================================================ */
 function abrirConfig() {
   $('#config-backdrop').classList.remove('hidden');
   $('#config-modal').classList.remove('hidden');
@@ -2435,9 +2290,6 @@ async function resetConfig() {
   renderConfig();
 }
 
-/* ============================================================
-   HELPERS
-   ============================================================ */
 function parseFecha(f) {
   if (!f) return new Date(0);
   const d = new Date(f + 'T00:00:00');
@@ -2447,6 +2299,11 @@ function fmtFecha(f) {
   if (!f) return '—';
   const d = parseFecha(f);
   return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
+}
+function fmtFechaLarga(f) {
+  if (!f) return '—';
+  const d = parseFecha(f);
+  return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: '2-digit' });
 }
 function fmtFechaHora(ts) {
   const d = new Date(ts);

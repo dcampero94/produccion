@@ -483,6 +483,57 @@ table.tabla { width: 100%; border-collapse: collapse; }
 
 .lock-icon { color: var(--warn); font-size: 11px; margin-right: 6px; }
 
+.pausa-tag {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--ink-mute);
+  background: var(--line);
+  border: 1px solid var(--line-2);
+  padding: 1px 7px;
+  border-radius: 999px;
+  vertical-align: middle;
+  margin-left: 6px;
+  text-transform: uppercase;
+}
+.folio-info {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+.folio-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-mute);
+}
+.folio-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--ink);
+  margin-left: 4px;
+}
+.pausa-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+.pausa-check input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--ink-mute); }
+.pausa-check strong { color: var(--ink); }
+
 .empty { padding: 60px 20px; text-align: center; color: var(--ink-mute); }
 .empty h3 { color: var(--ink-dim); margin: 0 0 8px; font-weight: 500; }
 
@@ -1226,7 +1277,24 @@ async function loadProyectos() {
     .order('actualizado_en', { ascending: false });
   if (error) { toast('Error cargando proyectos: ' + error.message, 'err'); return; }
   proyectos = data || [];
+  asignarFolios();
   render();
+}
+
+// Folio de producción: número secuencial por orden de venta (recalculado)
+function asignarFolios() {
+  // Orden cronológico de venta: fecha_venta, desempate por creado_en
+  const ordenados = [...proyectos].sort((a, b) => {
+    const fa = parseFecha(a.fecha_venta);
+    const fb = parseFecha(b.fecha_venta);
+    if (fa - fb !== 0) return fa - fb;
+    // Desempate por hora de creación
+    return new Date(a.creado_en) - new Date(b.creado_en);
+  });
+  // Asignar folio 1..N y guardarlo en cada objeto (en memoria, no en DB)
+  const folioPorId = {};
+  ordenados.forEach((p, i) => { folioPorId[p.id] = i + 1; });
+  proyectos.forEach(p => { p.folio_produccion = folioPorId[p.id]; });
 }
 
 async function loadComentarios(proyectoId, tabla) {
@@ -1286,6 +1354,7 @@ function switchTab(tab) {
 
 function calcularUrgenciaInst(p) {
   if (!p) return 'gris';
+  if (p.en_pausa) return 'gris';   // en pausa: no genera alarma
   const estado = p.estado_instalacion;
   if (estado === 'Instalada') return 'gris';
 
@@ -1336,6 +1405,7 @@ function calcularUrgenciaInst(p) {
 
 function calcularUrgenciaTra(p) {
   if (!p) return 'gris';
+  if (p.en_pausa) return 'gris';   // en pausa: no genera alarma
   const estado = p.estado_tramite;
   if (estado === 'Aprobado' || estado === 'N/A') return 'gris';
 
@@ -1447,6 +1517,7 @@ function renderCola() {
   const instActivos = activos.filter(p => p.estado_instalacion !== 'Instalada');
   const iRojos = [], iAmarillos = [], iVerdes = [];
   instActivos.forEach(p => {
+    if (p.en_pausa) { iVerdes.push(p); return; }  // pausados van a Pendientes, sin alarma
     const u = calcularUrgenciaInst(p);
     if (u === 'rojo')          iRojos.push(p);
     else if (u === 'amarillo') iAmarillos.push(p);
@@ -1523,8 +1594,8 @@ function renderCartaCola(p, zona, tipo) {
   const meta = (tipo === 'tra') ? generarMetaCartaTramite(p, zona) : generarMetaCarta(p, zona);
   return `<div class="cola-card" data-id="${p.id}">
     <div class="cola-card-head">
-      <span class="cola-card-num">${p.cotizacion_num ? '#' + p.cotizacion_num : ''}</span>
-      <span class="cola-card-cliente">${escapeHtml(p.cliente_nombre || '(sin nombre)')}</span>
+      <span class="cola-card-num">${p.folio_produccion ? '#' + p.folio_produccion : ''}</span>
+      <span class="cola-card-cliente">${escapeHtml(p.cliente_nombre || '(sin nombre)')}${p.en_pausa ? ' <span class="pausa-tag">EN PAUSA</span>' : ''}</span>
     </div>
     <div class="cola-card-meta">${meta}</div>
   </div>`;
@@ -1667,8 +1738,8 @@ function renderTablaInstalacion(lista) {
     const urg = calcularUrgenciaInst(p);
     return `<tr class="${p.bloqueado ? 'bloqueado' : ''} urg-${urg}-row" data-id="${p.id}">
       <td class="urg-cell">${urgIcono(urg)}</td>
-      <td data-label="#" class="mono" style="color:var(--ink-mute)">${p.cotizacion_num ? '#' + p.cotizacion_num : '—'}</td>
-      <td data-label="Cliente">${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}</td>
+      <td data-label="#" class="mono" style="color:var(--ink-mute)">${p.folio_produccion ? '#' + p.folio_produccion : '—'}</td>
+      <td data-label="Cliente">${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}${p.en_pausa ? ' <span class="pausa-tag">EN PAUSA</span>' : ''}</td>
       <td data-label="Estado"><span class="estado-pill ${classInst(p.estado_instalacion)}">${p.estado_instalacion || '—'}</span></td>
       ${cuadrillaCell}
       <td data-label="kW" class="mono">${p.kw_sistema ? p.kw_sistema + ' kW' : '—'}</td>
@@ -1719,8 +1790,8 @@ function renderTablaTramite(lista) {
 
     const urg = calcularUrgenciaTra(p);
     return `<tr class="${p.bloqueado ? 'bloqueado' : ''} urg-${urg}-row" data-id="${p.id}">
-      <td data-label="#" class="mono" style="color:var(--ink-mute)">${p.cotizacion_num ? '#' + p.cotizacion_num : '—'}</td>
-      <td data-label="Cliente">${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}</td>
+      <td data-label="#" class="mono" style="color:var(--ink-mute)">${p.folio_produccion ? '#' + p.folio_produccion : '—'}</td>
+      <td data-label="Cliente">${p.bloqueado ? '<span class="lock-icon">🔒</span>' : ''}${escapeHtml(p.cliente_nombre || '(sin nombre)')}${p.en_pausa ? ' <span class="pausa-tag">EN PAUSA</span>' : ''}</td>
       <td data-label="Estado"><span class="estado-pill ${classTra(p.estado_tramite)}">${p.estado_tramite || '—'}</span></td>
       <td data-label="SIRESI" class="mono">${escapeHtml(p.siresi || '—')}</td>
       ${inicioCell}
@@ -1755,7 +1826,7 @@ async function openDrawer(id) {
   drawerPaneles    = normalizarEquipos(p.paneles_json, p.marca_paneles, p.num_paneles, p.potencia_paneles);
   drawerInversores = normalizarEquipos(p.inversores_json, p.marca_inversor, p.num_inversores, p.potencia_inversor);
 
-  $('#d-titulo').textContent = (p.cotizacion_num ? `#${p.cotizacion_num} · ` : '') + (p.cliente_nombre || '(sin nombre)');
+  $('#d-titulo').innerHTML = (p.folio_produccion ? `#${p.folio_produccion} · ` : '') + escapeHtml(p.cliente_nombre || '(sin nombre)') + (p.en_pausa ? ' <span class="pausa-tag">EN PAUSA</span>' : '');
   $('#drawer').classList.add('open');
   $('#drawer-backdrop').classList.add('open');
 
@@ -1776,6 +1847,10 @@ async function openDrawer(id) {
 
     <div class="section">
       <h3>Cliente</h3>
+      <div class="folio-info">
+        <span><span class="folio-label">Producción</span> <span class="folio-num">#${p.folio_produccion || '—'}</span></span>
+        <span><span class="folio-label">Cotización</span> <span class="folio-num">#${p.cotizacion_num || '—'}</span></span>
+      </div>
       <div class="grid-2">
         <div class="field"><label>Nombre</label><input value="${escapeAttr(p.cliente_nombre)}" data-field="cliente_nombre" ${ro}></div>
         <div class="field"><label>Teléfono</label><input value="${escapeAttr(p.cliente_telefono)}" data-field="cliente_telefono" ${ro}></div>
@@ -1786,6 +1861,10 @@ async function openDrawer(id) {
 
     <div class="section">
       <h3>Estado del proyecto</h3>
+      <label class="pausa-check">
+        <input type="checkbox" data-field="en_pausa" id="d-en-pausa" ${p.en_pausa ? 'checked' : ''} ${ro}>
+        <span>⏸ Marcar proyecto <strong>En pausa</strong></span>
+      </label>
       <div class="grid-2">
         <div class="field"><label>Instalación</label>
           <select data-field="estado_instalacion" id="d-estado-inst" ${ro}>${instSelect}</select>
@@ -2118,8 +2197,12 @@ async function agregarComentario(tipo) {
 async function guardarDrawer() {
   const cambios = {};
   document.querySelectorAll('#drawer-body [data-field]').forEach(el => {
-    let v = el.value;
     const field = el.dataset.field;
+    if (el.type === 'checkbox') {
+      cambios[field] = el.checked;
+      return;
+    }
+    let v = el.value;
     if (v === '' || v === undefined) {
       v = null;
     } else if (el.type === 'number') {

@@ -1700,7 +1700,9 @@ function renderMetricas() {
 }
 
 function ordenar(lista) {
-  const { field, dir } = sortState;
+  let { field, dir } = sortState;
+  // La columna "#" muestra el folio de producción, así que ordena por él
+  if (field === 'cotizacion_num') field = 'folio_produccion';
   const mult = dir === 'asc' ? 1 : -1;
   lista.sort((a, b) => {
     let va = a[field], vb = b[field];

@@ -355,6 +355,11 @@ header.topbar {
 .cola-col[data-zona="rojo"]     .cola-card { border-left-color: #ef4444; }
 .cola-col[data-zona="amarillo"] .cola-card { border-left-color: #f59e0b; }
 .cola-col[data-zona="verde"]    .cola-card { border-left-color: #4ade80; }
+/* Cartas con urgencia propia (usado en columnas por-etapa) */
+.cola-card.card-urg-rojo     { border-left-color: #ef4444; }
+.cola-card.card-urg-amarillo { border-left-color: #f59e0b; }
+.cola-card.card-urg-verde    { border-left-color: #4ade80; }
+.cola-card.card-urg-gris     { border-left-color: var(--line-2); }
 .cola-card-head {
   display: flex;
   align-items: baseline;
@@ -935,29 +940,29 @@ table.tabla { width: 100%; border-collapse: collapse; }
     <div class="cola-seccion">
       <div class="cola-seccion-titulo">Instalación</div>
       <div class="cola-wrap">
-        <div class="cola-col" data-zona="rojo">
+        <div class="cola-col" data-zona="etapa">
           <div class="cola-col-header">
             <span class="urg-dot urg-rojo"></span>
-            <span class="cola-col-title">Atrasados</span>
-            <span class="cola-col-count" id="cnt-i-rojo">0</span>
+            <span class="cola-col-title">Pendientes por atender</span>
+            <span class="cola-col-count" id="cnt-i-pend">0</span>
           </div>
-          <div class="cola-col-body" id="cola-i-rojo"></div>
+          <div class="cola-col-body" id="cola-i-pend"></div>
         </div>
-        <div class="cola-col" data-zona="amarillo">
+        <div class="cola-col" data-zona="etapa">
           <div class="cola-col-header">
             <span class="urg-dot urg-amarillo"></span>
-            <span class="cola-col-title">Por atender</span>
-            <span class="cola-col-count" id="cnt-i-amarillo">0</span>
+            <span class="cola-col-title">En proceso de instalación</span>
+            <span class="cola-col-count" id="cnt-i-proc">0</span>
           </div>
-          <div class="cola-col-body" id="cola-i-amarillo"></div>
+          <div class="cola-col-body" id="cola-i-proc"></div>
         </div>
-        <div class="cola-col" data-zona="verde">
+        <div class="cola-col" data-zona="etapa">
           <div class="cola-col-header">
             <span class="urg-dot urg-verde"></span>
-            <span class="cola-col-title">Pendientes</span>
-            <span class="cola-col-count" id="cnt-i-verde">0</span>
+            <span class="cola-col-title">Terminadas</span>
+            <span class="cola-col-count" id="cnt-i-term">0</span>
           </div>
-          <div class="cola-col-body" id="cola-i-verde"></div>
+          <div class="cola-col-body" id="cola-i-term"></div>
         </div>
       </div>
     </div>
@@ -1225,7 +1230,7 @@ function bindUI() {
     });
   });
 
-  ['cola-i-rojo', 'cola-i-amarillo', 'cola-i-verde', 'cola-t-rojo', 'cola-t-amarillo', 'cola-t-verde'].forEach(id => {
+  ['cola-i-pend', 'cola-i-proc', 'cola-i-term', 'cola-t-rojo', 'cola-t-amarillo', 'cola-t-verde'].forEach(id => {
     const col = document.getElementById(id);
     if (col) col.addEventListener('click', (e) => {
       const card = e.target.closest('.cola-card[data-id]');
@@ -1514,22 +1519,29 @@ function render() {
 function renderCola() {
   const activos = proyectos.filter(p => !p.bloqueado);
 
-  const instActivos = activos.filter(p => p.estado_instalacion !== 'Instalada');
-  const iRojos = [], iAmarillos = [], iVerdes = [];
-  instActivos.forEach(p => {
-    if (p.en_pausa) { iVerdes.push(p); return; }  // pausados van a Pendientes, sin alarma
-    const u = calcularUrgenciaInst(p);
-    if (u === 'rojo')          iRojos.push(p);
-    else if (u === 'amarillo') iAmarillos.push(p);
-    else if (u === 'verde')    iVerdes.push(p);
+  // ---- INSTALACIÓN por etapa ----
+  // Pendientes por atender: Pendiente + Programada
+  const iPend = activos.filter(p => p.estado_instalacion === 'Pendiente' || p.estado_instalacion === 'Programada');
+  // En proceso: En instalación
+  const iProc = activos.filter(p => p.estado_instalacion === 'En instalación');
+  // Terminadas esta semana (lunes a sábado de la semana actual)
+  const iTerm = activos.filter(p => {
+    if (p.estado_instalacion !== 'Instalada') return false;
+    if (!p.fecha_terminacion) return false;
+    return esDeEstaSemana(p.fecha_terminacion);
   });
-  iRojos.sort((a, b) => fechaRef(a) - fechaRef(b));
-  iAmarillos.sort((a, b) => fechaRef(a) - fechaRef(b));
-  iVerdes.sort((a, b) => parseFecha(a.fecha_programada_instalacion || a.fecha_inicio_instalacion || a.fecha_venta) - parseFecha(b.fecha_programada_instalacion || b.fecha_inicio_instalacion || b.fecha_venta));
 
-  pintarColumnaCola('cola-i-rojo',     'cnt-i-rojo',     iRojos,     'rojo', 'inst');
-  pintarColumnaCola('cola-i-amarillo', 'cnt-i-amarillo', iAmarillos, 'amarillo', 'inst');
-  pintarColumnaCola('cola-i-verde',    'cnt-i-verde',    iVerdes,    'verde', 'inst');
+  // Orden dentro de cada columna
+  // Pendientes: por urgencia (rojo→amarillo→verde), luego por antigüedad
+  iPend.sort((a, b) => ordenUrgencia(a, b) || (fechaRef(a) - fechaRef(b)));
+  // En proceso: los que llevan más días instalando primero
+  iProc.sort((a, b) => parseFecha(a.fecha_inicio_instalacion) - parseFecha(b.fecha_inicio_instalacion));
+  // Terminadas: más reciente arriba
+  iTerm.sort((a, b) => parseFecha(b.fecha_terminacion) - parseFecha(a.fecha_terminacion));
+
+  pintarColumnaCola('cola-i-pend', 'cnt-i-pend', iPend, 'etapa', 'inst');
+  pintarColumnaCola('cola-i-proc', 'cnt-i-proc', iProc, 'etapa', 'inst');
+  pintarColumnaCola('cola-i-term', 'cnt-i-term', iTerm, 'etapa', 'inst');
 
   const traActivos = activos.filter(p => p.estado_tramite !== 'Aprobado' && p.estado_tramite !== 'N/A');
   const tRojos = [], tAmarillos = [], tVerdes = [];
@@ -1560,6 +1572,30 @@ function fechaRef(p) {
   return new Date(p.creado_en);
 }
 
+// ¿La fecha cae en la semana actual (lunes a sábado)?
+function esDeEstaSemana(fecha) {
+  const d = parseFecha(fecha);
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  // Lunes de esta semana
+  const diaSemana = hoy.getDay(); // 0=domingo, 1=lunes, ... 6=sábado
+  const diasDesdeLunes = (diaSemana === 0) ? 6 : (diaSemana - 1);
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - diasDesdeLunes);
+  // Sábado de esta semana
+  const sabado = new Date(lunes);
+  sabado.setDate(lunes.getDate() + 5);
+  sabado.setHours(23,59,59,999);
+  return d >= lunes && d <= sabado;
+}
+
+// Orden por urgencia: rojo primero, luego amarillo, verde, gris
+function ordenUrgencia(a, b) {
+  const rank = { 'rojo': 0, 'amarillo': 1, 'verde': 2, 'gris': 3 };
+  const ua = a.en_pausa ? 'gris' : calcularUrgenciaInst(a);
+  const ub = b.en_pausa ? 'gris' : calcularUrgenciaInst(b);
+  return rank[ua] - rank[ub];
+}
+
 function diasHasta(fecha) {
   if (!fecha) return null;
   const hoy = new Date(); hoy.setHours(0,0,0,0);
@@ -1577,13 +1613,17 @@ function pintarColumnaCola(bodyId, countId, lista, zona, tipo) {
   document.getElementById(countId).textContent = lista.length;
   const body = document.getElementById(bodyId);
   if (lista.length === 0) {
-    const msg = tipo === 'inst'
-      ? (zona === 'rojo'     ? 'Sin atrasados 👍'
-        : zona === 'amarillo' ? 'Nada por atender de inmediato'
-        : 'Sin pendientes')
-      : (zona === 'rojo'     ? 'Sin trámites atrasados 👍'
-        : zona === 'amarillo' ? 'Trámites sin urgencias'
-        : 'Sin trámites recientes');
+    let msg;
+    if (tipo === 'inst') {
+      // Columnas por etapa
+      msg = bodyId === 'cola-i-pend' ? 'Nada pendiente por atender 👍'
+          : bodyId === 'cola-i-proc' ? 'Ninguna instalación en proceso'
+          : 'Sin instalaciones terminadas esta semana';
+    } else {
+      msg = zona === 'rojo'     ? 'Sin trámites atrasados 👍'
+          : zona === 'amarillo' ? 'Trámites sin urgencias'
+          : 'Sin trámites recientes';
+    }
     body.innerHTML = `<div class="cola-empty">${msg}</div>`;
     return;
   }
@@ -1592,7 +1632,13 @@ function pintarColumnaCola(bodyId, countId, lista, zona, tipo) {
 
 function renderCartaCola(p, zona, tipo) {
   const meta = (tipo === 'tra') ? generarMetaCartaTramite(p, zona) : generarMetaCarta(p, zona);
-  return `<div class="cola-card" data-id="${p.id}">
+  // En columnas por-etapa (zona 'etapa'), la barra de color viene de la urgencia de la carta
+  let claseUrg = '';
+  if (zona === 'etapa') {
+    const u = p.en_pausa ? 'gris' : calcularUrgenciaInst(p);
+    claseUrg = ' card-urg-' + u;
+  }
+  return `<div class="cola-card${claseUrg}" data-id="${p.id}">
     <div class="cola-card-head">
       <span class="cola-card-num">${p.folio_produccion ? '#' + p.folio_produccion : ''}</span>
       <span class="cola-card-cliente">${escapeHtml(p.cliente_nombre || '(sin nombre)')}${p.en_pausa ? ' <span class="pausa-tag">EN PAUSA</span>' : ''}</span>

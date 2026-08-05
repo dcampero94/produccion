@@ -1657,6 +1657,12 @@ function generarMetaCarta(p, zona) {
   else l1 += ` · <span class="${zona === 'rojo' ? 'alerta-roja' : 'alerta'}">Sin cuadrilla</span>`;
   lineas.push(l1);
 
+  // Si está en pausa, no seguimos contando días
+  if (p.en_pausa) {
+    lineas.push(`<span style="color:var(--ink-mute)">Conteo pausado</span>`);
+    return lineas.join('<br>');
+  }
+
   if (estado === 'En instalación') {
     const dias = diasDesde(p.fecha_inicio_instalacion);
     if (dias !== null) {
@@ -1695,6 +1701,11 @@ function generarMetaCartaTramite(p, zona) {
   if (p.siresi) l1 += ` · <span class="mono" style="font-size:11px">SIRESI ${escapeHtml(p.siresi)}</span>`;
   else if (estado !== 'Sin iniciar') l1 += ` · <span class="alerta">Sin SIRESI capturado</span>`;
   lineas.push(l1);
+
+  if (p.en_pausa) {
+    lineas.push(`<span style="color:var(--ink-mute)">Conteo pausado</span>`);
+    return lineas.join('<br>');
+  }
 
   const diasV = diasDesde(p.fecha_venta);
   if (estado === 'Sin iniciar') {

@@ -502,6 +502,20 @@ table.tabla { width: 100%; border-collapse: collapse; }
   margin-left: 6px;
   text-transform: uppercase;
 }
+.tag-instalado {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #16a34a;
+  background: rgba(74,222,128,0.12);
+  border: 1px solid #4ade80;
+  padding: 1px 8px;
+  border-radius: 999px;
+  vertical-align: middle;
+  margin-left: 6px;
+  white-space: nowrap;
+}
 .folio-info {
   display: flex;
   gap: 24px;
@@ -970,29 +984,29 @@ table.tabla { width: 100%; border-collapse: collapse; }
     <div class="cola-seccion">
       <div class="cola-seccion-titulo">Trámite CFE</div>
       <div class="cola-wrap">
-        <div class="cola-col" data-zona="rojo">
+        <div class="cola-col" data-zona="etapa">
           <div class="cola-col-header">
             <span class="urg-dot urg-rojo"></span>
-            <span class="cola-col-title">Atrasados</span>
-            <span class="cola-col-count" id="cnt-t-rojo">0</span>
+            <span class="cola-col-title">Pendientes por ingresar</span>
+            <span class="cola-col-count" id="cnt-t-ping">0</span>
           </div>
-          <div class="cola-col-body" id="cola-t-rojo"></div>
+          <div class="cola-col-body" id="cola-t-ping"></div>
         </div>
-        <div class="cola-col" data-zona="amarillo">
+        <div class="cola-col" data-zona="etapa">
           <div class="cola-col-header">
             <span class="urg-dot urg-amarillo"></span>
-            <span class="cola-col-title">Por atender</span>
-            <span class="cola-col-count" id="cnt-t-amarillo">0</span>
+            <span class="cola-col-title">En trámite</span>
+            <span class="cola-col-count" id="cnt-t-proc">0</span>
           </div>
-          <div class="cola-col-body" id="cola-t-amarillo"></div>
+          <div class="cola-col-body" id="cola-t-proc"></div>
         </div>
-        <div class="cola-col" data-zona="verde">
+        <div class="cola-col" data-zona="etapa">
           <div class="cola-col-header">
             <span class="urg-dot urg-verde"></span>
-            <span class="cola-col-title">Recientes</span>
-            <span class="cola-col-count" id="cnt-t-verde">0</span>
+            <span class="cola-col-title">Interconectados</span>
+            <span class="cola-col-count" id="cnt-t-int">0</span>
           </div>
-          <div class="cola-col-body" id="cola-t-verde"></div>
+          <div class="cola-col-body" id="cola-t-int"></div>
         </div>
       </div>
     </div>
@@ -1230,7 +1244,7 @@ function bindUI() {
     });
   });
 
-  ['cola-i-pend', 'cola-i-proc', 'cola-i-term', 'cola-t-rojo', 'cola-t-amarillo', 'cola-t-verde'].forEach(id => {
+  ['cola-i-pend', 'cola-i-proc', 'cola-i-term', 'cola-t-ping', 'cola-t-proc', 'cola-t-int'].forEach(id => {
     const col = document.getElementById(id);
     if (col) col.addEventListener('click', (e) => {
       const card = e.target.closest('.cola-card[data-id]');
@@ -1543,26 +1557,35 @@ function renderCola() {
   pintarColumnaCola('cola-i-proc', 'cnt-i-proc', iProc, 'etapa', 'inst');
   pintarColumnaCola('cola-i-term', 'cnt-i-term', iTerm, 'etapa', 'inst');
 
-  const traActivos = activos.filter(p => p.estado_tramite !== 'Aprobado' && p.estado_tramite !== 'N/A');
-  const tRojos = [], tAmarillos = [], tVerdes = [];
-  traActivos.forEach(p => {
-    const u = calcularUrgenciaTra(p);
-    if (u === 'rojo')          tRojos.push(p);
-    else if (u === 'amarillo') tAmarillos.push(p);
-    else if (u === 'verde') {
-      const diasV = diasDesde(p.fecha_venta);
-      if (diasV !== null && diasV <= 14) tVerdes.push(p);
-    }
+  // ---- TRÁMITE CFE por etapa ----
+  const activosTra = activos.filter(p => p.estado_tramite !== 'N/A');
+  // Pendientes por ingresar: Sin iniciar
+  const tPing = activosTra.filter(p => p.estado_tramite === 'Sin iniciar');
+  // En trámite: En trámite
+  const tProc = activosTra.filter(p => p.estado_tramite === 'En trámite');
+  // Interconectados: Aprobado esta semana (lunes a sábado, por fecha de actualización)
+  const tInt = activosTra.filter(p => {
+    if (p.estado_tramite !== 'Aprobado') return false;
+    return esDeEstaSemana(p.actualizado_en);
   });
-  tRojos.sort((a, b) => parseFecha(a.fecha_venta) - parseFecha(b.fecha_venta));
-  tAmarillos.sort((a, b) => parseFecha(a.fecha_venta) - parseFecha(b.fecha_venta));
-  tVerdes.sort((a, b) => parseFecha(b.fecha_venta) - parseFecha(a.fecha_venta));
 
-  pintarColumnaCola('cola-t-rojo',     'cnt-t-rojo',     tRojos,     'rojo', 'tra');
-  pintarColumnaCola('cola-t-amarillo', 'cnt-t-amarillo', tAmarillos, 'amarillo', 'tra');
-  pintarColumnaCola('cola-t-verde',    'cnt-t-verde',    tVerdes,    'verde', 'tra');
+  // Orden por urgencia dentro de cada columna activa
+  tPing.sort((a, b) => ordenUrgenciaTra(a, b) || (parseFecha(a.fecha_venta) - parseFecha(b.fecha_venta)));
+  tProc.sort((a, b) => ordenUrgenciaTra(a, b) || (parseFecha(a.fecha_venta) - parseFecha(b.fecha_venta)));
+  tInt.sort((a, b) => new Date(b.actualizado_en) - new Date(a.actualizado_en));
+
+  pintarColumnaCola('cola-t-ping', 'cnt-t-ping', tPing, 'etapa', 'tra');
+  pintarColumnaCola('cola-t-proc', 'cnt-t-proc', tProc, 'etapa', 'tra');
+  pintarColumnaCola('cola-t-int',  'cnt-t-int',  tInt,  'etapa', 'tra');
 
   renderMetricas();
+}
+
+function ordenUrgenciaTra(a, b) {
+  const rank = { 'rojo': 0, 'amarillo': 1, 'verde': 2, 'gris': 3 };
+  const ua = a.en_pausa ? 'gris' : calcularUrgenciaTra(a);
+  const ub = b.en_pausa ? 'gris' : calcularUrgenciaTra(b);
+  return rank[ua] - rank[ub];
 }
 
 function fechaRef(p) {
@@ -1620,9 +1643,9 @@ function pintarColumnaCola(bodyId, countId, lista, zona, tipo) {
           : bodyId === 'cola-i-proc' ? 'Ninguna instalación en proceso'
           : 'Sin instalaciones terminadas esta semana';
     } else {
-      msg = zona === 'rojo'     ? 'Sin trámites atrasados 👍'
-          : zona === 'amarillo' ? 'Trámites sin urgencias'
-          : 'Sin trámites recientes';
+      msg = bodyId === 'cola-t-ping' ? 'Nada pendiente por ingresar 👍'
+          : bodyId === 'cola-t-proc' ? 'Ningún trámite en curso'
+          : 'Sin interconexiones esta semana';
     }
     body.innerHTML = `<div class="cola-empty">${msg}</div>`;
     return;
@@ -1635,13 +1658,17 @@ function renderCartaCola(p, zona, tipo) {
   // En columnas por-etapa (zona 'etapa'), la barra de color viene de la urgencia de la carta
   let claseUrg = '';
   if (zona === 'etapa') {
-    const u = p.en_pausa ? 'gris' : calcularUrgenciaInst(p);
+    const u = p.en_pausa ? 'gris' : (tipo === 'tra' ? calcularUrgenciaTra(p) : calcularUrgenciaInst(p));
     claseUrg = ' card-urg-' + u;
   }
+  // En cartas de trámite, insignia si el sistema solar ya está físicamente instalado
+  const insigniaInstalado = (tipo === 'tra' && p.estado_instalacion === 'Instalada')
+    ? ' <span class="tag-instalado">Sistema Solar Instalado</span>'
+    : '';
   return `<div class="cola-card${claseUrg}" data-id="${p.id}">
     <div class="cola-card-head">
       <span class="cola-card-num">${p.folio_produccion ? '#' + p.folio_produccion : ''}</span>
-      <span class="cola-card-cliente">${escapeHtml(p.cliente_nombre || '(sin nombre)')}${p.en_pausa ? ' <span class="pausa-tag">EN PAUSA</span>' : ''}</span>
+      <span class="cola-card-cliente">${escapeHtml(p.cliente_nombre || '(sin nombre)')}${p.en_pausa ? ' <span class="pausa-tag">EN PAUSA</span>' : ''}${insigniaInstalado}</span>
     </div>
     <div class="cola-card-meta">${meta}</div>
   </div>`;
@@ -1718,7 +1745,7 @@ function generarMetaCartaTramite(p, zona) {
       const diasInst = diasDesde(p.fecha_terminacion);
       if (diasInst !== null && diasInst >= sla('tra_instalado_sin_aprobar_amarillo', 1)) {
         const cls = diasInst >= sla('tra_instalado_sin_aprobar_rojo', 30) ? 'alerta-roja' : 'alerta';
-        lineas.push(`<span class="${cls}">Ya instalado · ${diasInst} día${diasInst===1?'':'s'} esperando aprobación</span>`);
+        lineas.push(`<span class="${cls}">${diasInst} día${diasInst===1?'':'s'} esperando aprobación</span>`);
       } else if (diasV !== null) {
         lineas.push(`<span>${diasV} días en trámite</span>`);
       }

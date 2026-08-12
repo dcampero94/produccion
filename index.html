@@ -379,13 +379,14 @@ header.topbar {
 }
 .carta-der-asesor {
   font-size: 12px;
-  font-weight: 500;
-  color: var(--ink);
+  font-weight: 400;
+  color: var(--ink-mute);
 }
 .carta-der-tec {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  color: var(--ink-mute);
+  color: var(--ink);
+  font-weight: 600;
   white-space: nowrap;
 }
 @media (max-width: 600px) {
@@ -1714,13 +1715,13 @@ function renderCartaCola(p, zona, tipo) {
     const totalPaneles = contarPaneles(p);
     const kw = p.kw_sistema ? `${p.kw_sistema} kW` : '';
     const lineasDer = [];
-    if (p.asesor_original) lineasDer.push(`<span class="carta-der-asesor">${escapeHtml(p.asesor_original)}</span>`);
     if (totalPaneles > 0 || kw) {
       const partes = [];
       if (totalPaneles > 0) partes.push(`${totalPaneles} panel${totalPaneles === 1 ? '' : 'es'}`);
       if (kw) partes.push(kw);
       lineasDer.push(`<span class="carta-der-tec">${partes.join(' · ')}</span>`);
     }
+    if (p.asesor_original) lineasDer.push(`<span class="carta-der-asesor">${escapeHtml(p.asesor_original)}</span>`);
     if (lineasDer.length) panelDerecho = `<div class="cola-card-der">${lineasDer.join('')}</div>`;
   }
 

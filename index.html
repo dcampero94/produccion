@@ -1743,15 +1743,7 @@ function generarMetaCartaTramite(p, zona) {
       lineas.push(`<span class="${claseDias}">Sin iniciar · ${diasV} día${diasV===1?'':'s'} desde la venta</span>`);
     }
   } else if (estado === 'En trámite') {
-    if (p.estado_instalacion === 'Instalada' && p.fecha_terminacion) {
-      const diasInst = diasDesde(p.fecha_terminacion);
-      if (diasInst !== null && diasInst >= sla('tra_instalado_sin_aprobar_amarillo', 1)) {
-        const cls = diasInst >= sla('tra_instalado_sin_aprobar_rojo', 30) ? 'alerta-roja' : 'alerta';
-        lineas.push(`<span class="${cls}">${diasInst} día${diasInst===1?'':'s'} esperando aprobación</span>`);
-      } else if (diasTramite !== null) {
-        lineas.push(`<span>${diasTramite} día${diasTramite===1?'':'s'} en trámite</span>`);
-      }
-    } else if (diasTramite !== null) {
+    if (diasTramite !== null) {
       const cls = diasTramite >= sla('tra_total_rojo', 90) ? 'alerta-roja' : (diasTramite >= sla('tra_total_amarillo', 60) ? 'alerta' : '');
       lineas.push(`<span class="${cls}">${diasTramite} día${diasTramite===1?'':'s'} en trámite</span>`);
     } else {

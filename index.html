@@ -469,6 +469,56 @@ header.topbar {
   color: var(--ink-mute);
 }
 
+/* Panel de paneles pendientes por instalar */
+.panel-pendientes {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 14px 18px;
+  width: 100%;
+}
+.panel-pendientes-titulo {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.panel-pendientes-titulo .pp-total {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  font-size: 13px;
+}
+.pp-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px 20px;
+}
+.pp-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.pp-tipo { font-size: 13px; color: var(--ink-dim); }
+.pp-cant {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.pp-vacio {
+  color: var(--ink-mute);
+  font-size: 12px;
+  font-style: italic;
+}
+
 main {
   overflow: auto;
   padding: 16px 20px;
@@ -1055,6 +1105,7 @@ table.tabla { width: 100%; border-collapse: collapse; }
     </div>
 
     <div class="cola-metricas" id="cola-metricas"></div>
+    <div class="panel-pendientes" id="panel-paneles-pend"></div>
   </main>
 
   <div class="filters hidden" data-tab-content="instalacion">
@@ -1622,6 +1673,62 @@ function renderCola() {
   pintarColumnaCola('cola-t-int',  'cnt-t-int',  tInt,  'etapa', 'tra');
 
   renderMetricas();
+  renderPanelesPendientes();
+}
+
+// Desglose de paneles pendientes por instalar (Pendiente + Programada), agrupado por tipo
+function renderPanelesPendientes() {
+  const cont = document.getElementById('panel-paneles-pend');
+  if (!cont) return;
+
+  // Proyectos que aún no empiezan instalación
+  const pendientes = proyectos.filter(p =>
+    !p.bloqueado && (p.estado_instalacion === 'Pendiente' || p.estado_instalacion === 'Programada')
+  );
+
+  // Agrupar paneles por marca + potencia
+  const grupos = {};   // clave "MARCA|POTENCIA" -> cantidad
+  let totalGeneral = 0;
+  pendientes.forEach(p => {
+    let arr = [];
+    const jsonVal = p.paneles_json;
+    if (Array.isArray(jsonVal)) arr = jsonVal;
+    else if (typeof jsonVal === 'string' && jsonVal.trim()) {
+      try { arr = JSON.parse(jsonVal); } catch(e) { arr = []; }
+    }
+    // Respaldo: columnas viejas si no hay JSON
+    if (arr.length === 0 && p.num_paneles) {
+      arr = [{ marca: p.marca_paneles || '', cantidad: p.num_paneles, potencia: p.potencia_paneles || '' }];
+    }
+    arr.forEach(eq => {
+      const cant = parseInt(eq.cantidad) || 0;
+      if (cant <= 0) return;
+      const marca = (eq.marca || 'Sin marca').trim();
+      const pot = eq.potencia ? `${eq.potencia}W` : 'Sin potencia';
+      const clave = `${marca} ${pot}`;
+      grupos[clave] = (grupos[clave] || 0) + cant;
+      totalGeneral += cant;
+    });
+  });
+
+  const claves = Object.keys(grupos).sort();
+  if (claves.length === 0) {
+    cont.innerHTML = `
+      <div class="panel-pendientes-titulo">Paneles pendientes por instalar</div>
+      <div class="pp-vacio">No hay paneles pendientes por instalar.</div>`;
+    return;
+  }
+
+  const filas = claves.map(k =>
+    `<div class="pp-row"><span class="pp-tipo">${escapeHtml(k)}</span><span class="pp-cant">${grupos[k]}</span></div>`
+  ).join('');
+
+  cont.innerHTML = `
+    <div class="panel-pendientes-titulo">
+      Paneles pendientes por instalar
+      <span class="pp-total">${totalGeneral} en total</span>
+    </div>
+    <div class="pp-lista">${filas}</div>`;
 }
 
 function ordenUrgenciaTra(a, b) {

@@ -360,6 +360,48 @@ header.topbar {
 .cola-card.card-urg-amarillo { border-left-color: #f59e0b; }
 .cola-card.card-urg-verde    { border-left-color: #4ade80; }
 .cola-card.card-urg-gris     { border-left-color: var(--line-2); }
+/* Carta con panel derecho (asesor + datos técnicos) */
+.cola-card.con-der {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.cola-card.con-der .cola-card-main { flex: 1; min-width: 0; }
+.cola-card-der {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+  flex-shrink: 0;
+  padding-left: 10px;
+  border-left: 1px solid var(--line);
+}
+.carta-der-asesor {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.carta-der-tec {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-mute);
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .cola-card.con-der { flex-direction: column; gap: 6px; }
+  .cola-card-der {
+    align-items: flex-start;
+    text-align: left;
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid var(--line);
+    padding-top: 6px;
+    width: 100%;
+    flex-direction: row;
+    gap: 12px;
+  }
+}
 .cola-card-head {
   display: flex;
   align-items: baseline;
@@ -1665,13 +1707,45 @@ function renderCartaCola(p, zona, tipo) {
   const insigniaInstalado = (tipo === 'tra' && p.estado_instalacion === 'Instalada')
     ? ' <span class="tag-instalado">Sistema Solar Instalado</span>'
     : '';
-  return `<div class="cola-card${claseUrg}" data-id="${p.id}">
-    <div class="cola-card-head">
-      <span class="cola-card-num">${p.folio_produccion ? '#' + p.folio_produccion : ''}</span>
-      <span class="cola-card-cliente">${escapeHtml(p.cliente_nombre || '(sin nombre)')}${p.en_pausa ? ' <span class="pausa-tag">EN PAUSA</span>' : ''}${insigniaInstalado}</span>
+
+  // Panel derecho: solo en Instalación. Asesor + total de paneles + kW.
+  let panelDerecho = '';
+  if (tipo === 'inst') {
+    const totalPaneles = contarPaneles(p);
+    const kw = p.kw_sistema ? `${p.kw_sistema} kW` : '';
+    const lineasDer = [];
+    if (p.asesor_original) lineasDer.push(`<span class="carta-der-asesor">${escapeHtml(p.asesor_original)}</span>`);
+    if (totalPaneles > 0 || kw) {
+      const partes = [];
+      if (totalPaneles > 0) partes.push(`${totalPaneles} panel${totalPaneles === 1 ? '' : 'es'}`);
+      if (kw) partes.push(kw);
+      lineasDer.push(`<span class="carta-der-tec">${partes.join(' · ')}</span>`);
+    }
+    if (lineasDer.length) panelDerecho = `<div class="cola-card-der">${lineasDer.join('')}</div>`;
+  }
+
+  return `<div class="cola-card${claseUrg}${panelDerecho ? ' con-der' : ''}" data-id="${p.id}">
+    <div class="cola-card-main">
+      <div class="cola-card-head">
+        <span class="cola-card-num">${p.folio_produccion ? '#' + p.folio_produccion : ''}</span>
+        <span class="cola-card-cliente">${escapeHtml(p.cliente_nombre || '(sin nombre)')}${p.en_pausa ? ' <span class="pausa-tag">EN PAUSA</span>' : ''}${insigniaInstalado}</span>
+      </div>
+      <div class="cola-card-meta">${meta}</div>
     </div>
-    <div class="cola-card-meta">${meta}</div>
+    ${panelDerecho}
   </div>`;
+}
+
+// Cuenta el total de paneles sumando todos los tipos del proyecto
+function contarPaneles(p) {
+  let arr = [];
+  const jsonVal = p.paneles_json;
+  if (Array.isArray(jsonVal)) arr = jsonVal;
+  else if (typeof jsonVal === 'string' && jsonVal.trim()) {
+    try { arr = JSON.parse(jsonVal); } catch(e) { arr = []; }
+  }
+  if (arr.length === 0 && p.num_paneles) return parseInt(p.num_paneles) || 0;
+  return arr.reduce((sum, eq) => sum + (parseInt(eq.cantidad) || 0), 0);
 }
 
 function generarMetaCarta(p, zona) {

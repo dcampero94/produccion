@@ -1735,6 +1735,8 @@ function generarMetaCartaTramite(p, zona) {
   }
 
   const diasV = diasDesde(p.fecha_venta);
+  // Días en trámite: se cuenta desde que inició el trámite, no desde la venta
+  const diasTramite = diasDesde(p.fecha_inicio_tramite);
   if (estado === 'Sin iniciar') {
     if (diasV !== null) {
       const claseDias = diasV > sla('tra_sin_iniciar_rojo', 16) ? 'alerta-roja' : (diasV >= sla('tra_sin_iniciar_amarillo', 8) ? 'alerta' : '');
@@ -1746,12 +1748,14 @@ function generarMetaCartaTramite(p, zona) {
       if (diasInst !== null && diasInst >= sla('tra_instalado_sin_aprobar_amarillo', 1)) {
         const cls = diasInst >= sla('tra_instalado_sin_aprobar_rojo', 30) ? 'alerta-roja' : 'alerta';
         lineas.push(`<span class="${cls}">${diasInst} día${diasInst===1?'':'s'} esperando aprobación</span>`);
-      } else if (diasV !== null) {
-        lineas.push(`<span>${diasV} días en trámite</span>`);
+      } else if (diasTramite !== null) {
+        lineas.push(`<span>${diasTramite} día${diasTramite===1?'':'s'} en trámite</span>`);
       }
-    } else if (diasV !== null) {
-      const cls = diasV >= sla('tra_total_rojo', 90) ? 'alerta-roja' : (diasV >= sla('tra_total_amarillo', 60) ? 'alerta' : '');
-      lineas.push(`<span class="${cls}">${diasV} días en trámite</span>`);
+    } else if (diasTramite !== null) {
+      const cls = diasTramite >= sla('tra_total_rojo', 90) ? 'alerta-roja' : (diasTramite >= sla('tra_total_amarillo', 60) ? 'alerta' : '');
+      lineas.push(`<span class="${cls}">${diasTramite} día${diasTramite===1?'':'s'} en trámite</span>`);
+    } else {
+      lineas.push(`<span style="color:var(--ink-mute)">Sin fecha de inicio de trámite</span>`);
     }
   }
 
@@ -2509,5 +2513,5 @@ function toast(msg, kind = 'ok') {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
 }
 </script>
-</body> 
+</body>
 </html>

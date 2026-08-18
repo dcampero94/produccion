@@ -389,6 +389,11 @@ header.topbar {
   font-weight: 600;
   white-space: nowrap;
 }
+.carta-der-venta {
+  font-size: 11px;
+  color: var(--ink-mute);
+  white-space: nowrap;
+}
 @media (max-width: 600px) {
   .cola-card.con-der { flex-direction: column; gap: 6px; }
   .cola-card-der {
@@ -1788,6 +1793,13 @@ function renderCartaCola(p, zona, tipo) {
       if (kw) partes.push(kw);
       lineasDer.push(`<span class="carta-der-tec">${partes.join(' · ')}</span>`);
     }
+    // Vendida hace X días: en medio, solo en pendientes por atender (Pendiente/Programada) y sin pausa
+    if (!p.en_pausa && (p.estado_instalacion === 'Pendiente' || p.estado_instalacion === 'Programada')) {
+      const diasV = diasDesde(p.fecha_venta);
+      if (diasV !== null) {
+        lineasDer.push(`<span class="carta-der-venta">Vendida hace ${diasV} día${diasV===1?'':'s'}</span>`);
+      }
+    }
     if (p.asesor_original) lineasDer.push(`<span class="carta-der-asesor">${escapeHtml(p.asesor_original)}</span>`);
     if (lineasDer.length) panelDerecho = `<div class="cola-card-der">${lineasDer.join('')}</div>`;
   }
@@ -1856,16 +1868,6 @@ function generarMetaCarta(p, zona) {
       else lineas.push(`<span>Vendida hace ${dias || 0} día${(dias||0)===1?'':'s'}</span>`);
     } else if (!p.fecha_programada_instalacion) {
       lineas.push(`<span class="alerta">Falta fecha programada</span>`);
-    }
-  }
-
-  // Línea de "Vendida hace X días" siempre visible en pendientes por atender,
-  // si no se mostró ya arriba (para no duplicar en el caso Pendiente sin cuadrilla)
-  if ((estado === 'Pendiente' || estado === 'Programada')) {
-    const diasV = diasDesde(p.fecha_venta);
-    const yaMostroVenta = (estado === 'Pendiente' && !p.cuadrilla);
-    if (diasV !== null && !yaMostroVenta) {
-      lineas.push(`<span style="color:var(--ink-mute)">Vendida hace ${diasV} día${diasV===1?'':'s'}</span>`);
     }
   }
 

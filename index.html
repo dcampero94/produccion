@@ -1859,6 +1859,16 @@ function generarMetaCarta(p, zona) {
     }
   }
 
+  // Línea de "Vendida hace X días" siempre visible en pendientes por atender,
+  // si no se mostró ya arriba (para no duplicar en el caso Pendiente sin cuadrilla)
+  if ((estado === 'Pendiente' || estado === 'Programada')) {
+    const diasV = diasDesde(p.fecha_venta);
+    const yaMostroVenta = (estado === 'Pendiente' && !p.cuadrilla);
+    if (diasV !== null && !yaMostroVenta) {
+      lineas.push(`<span style="color:var(--ink-mute)">Vendida hace ${diasV} día${diasV===1?'':'s'}</span>`);
+    }
+  }
+
   return lineas.join('<br>');
 }
 
@@ -2128,34 +2138,17 @@ async function openDrawer(id) {
     </div>
 
     <div class="section">
-      <h3>Estado del proyecto</h3>
-      <label class="pausa-check">
-        <input type="checkbox" data-field="en_pausa" id="d-en-pausa" ${p.en_pausa ? 'checked' : ''} ${ro}>
-        <span>⏸ Marcar proyecto <strong>En pausa</strong></span>
-      </label>
-      <div class="grid-2">
-        <div class="field"><label>Instalación</label>
+      <h3>Instalación</h3>
+      <div class="grid-3">
+        <div class="field"><label>Estado de instalación</label>
           <select data-field="estado_instalacion" id="d-estado-inst" ${ro}>${instSelect}</select>
         </div>
-        <div class="field"><label>Trámite CFE</label>
-          <select data-field="estado_tramite" id="d-estado-tra" ${ro}>${traSelect}</select>
-        </div>
-        <div class="field"><label>Inicio del trámite</label>
-          <input type="date" value="${p.fecha_inicio_tramite || ''}" data-field="fecha_inicio_tramite" id="d-fecha-tramite" ${ro}>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <h3>Cuadrilla y fechas</h3>
-      <div class="grid-3">
         <div class="field"><label>Cuadrilla</label>
           <select data-field="cuadrilla" ${ro} id="d-cuadrilla"><option value="">—</option>${cuadrillaSelect}</select>
         </div>
         <div class="field"><label>Si "Otro", ¿cuál?</label>
           <input value="${escapeAttr(p.cuadrilla_otro)}" data-field="cuadrilla_otro" ${ro} id="d-cuadrilla-otro">
         </div>
-        <div class="field"></div>
       </div>
       <div class="grid-3">
         <div class="field"><label>Programada</label><input type="date" value="${p.fecha_programada_instalacion || ''}" data-field="fecha_programada_instalacion" id="d-fecha-prog" ${ro}></div>
@@ -2188,8 +2181,18 @@ async function openDrawer(id) {
     </div>
 
     <div class="section">
-      <h3>Trámite CFE (SIRESI)</h3>
-      <div class="field" style="max-width:280px"><label>Número SIRESI</label><input value="${escapeAttr(p.siresi)}" data-field="siresi" ${ro}></div>
+      <h3>Trámite CFE</h3>
+      <div class="grid-3">
+        <div class="field"><label>Estado del trámite</label>
+          <select data-field="estado_tramite" id="d-estado-tra" ${ro}>${traSelect}</select>
+        </div>
+        <div class="field"><label>Inicio del trámite</label>
+          <input type="date" value="${p.fecha_inicio_tramite || ''}" data-field="fecha_inicio_tramite" id="d-fecha-tramite" ${ro}>
+        </div>
+        <div class="field"><label>Número SIRESI</label>
+          <input value="${escapeAttr(p.siresi)}" data-field="siresi" ${ro}>
+        </div>
+      </div>
       <div style="margin-top:10px">
         <div class="comentarios-list" id="cfe-list"><div class="empty" style="padding:20px">Cargando…</div></div>
         ${p.bloqueado ? '' : `
@@ -2210,6 +2213,13 @@ async function openDrawer(id) {
           <button class="btn btn-sm" id="gen-add">Agregar</button>
         </div>
       `}
+    </div>
+
+    <div class="section">
+      <label class="pausa-check">
+        <input type="checkbox" data-field="en_pausa" id="d-en-pausa" ${p.en_pausa ? 'checked' : ''} ${ro}>
+        <span>⏸ Marcar proyecto <strong>En pausa</strong></span>
+      </label>
     </div>
   `;
 

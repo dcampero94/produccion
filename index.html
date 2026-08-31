@@ -765,6 +765,26 @@ table.tabla { width: 100%; border-collapse: collapse; }
 .combo-row { display: flex; gap: 6px; }
 .combo-row select { flex: 1; }
 
+.ubicacion-row {
+  display: grid;
+  grid-template-columns: 2fr 1.3fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 12px;
+}
+.btn-maps {
+  height: 38px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+@media (max-width: 768px) {
+  .ubicacion-row { grid-template-columns: 1fr 1fr; }
+  .ubicacion-row .field:first-child { grid-column: 1 / -1; }
+  .btn-maps { grid-column: 1 / -1; width: 100%; justify-content: center; }
+}
+
 .equipos-head {
   display: flex;
   align-items: center;
@@ -2137,6 +2157,11 @@ async function openDrawer(id) {
         <div class="field"><label>Asesor original</label><input value="${escapeAttr(p.asesor_original)}" data-field="asesor_original" ${ro}></div>
         <div class="field"><label>Fecha de venta</label><input type="date" value="${p.fecha_venta || ''}" data-field="fecha_venta" ${ro}></div>
       </div>
+      <div class="ubicacion-row">
+        <div class="field" style="margin-bottom:0"><label>Dirección</label><input value="${escapeAttr(p.direccion)}" data-field="direccion" id="d-direccion" ${ro} placeholder="Calle, número, colonia, ciudad"></div>
+        <div class="field" style="margin-bottom:0"><label>Coordenadas (lat, long)</label><input value="${escapeAttr(p.coordenadas)}" data-field="coordenadas" id="d-coordenadas" ${ro} placeholder="Ej: 22.2331, -97.8610"></div>
+        <button type="button" class="btn btn-ghost btn-sm btn-maps" id="d-abrir-maps" title="Abrir en Google Maps">📍 Maps</button>
+      </div>
     </div>
 
     <div class="section">
@@ -2307,6 +2332,24 @@ async function openDrawer(id) {
       }
     });
   }
+
+  // Botón "Abrir en Google Maps" (funciona siempre, solo lee)
+  const btnMaps = document.getElementById('d-abrir-maps');
+  if (btnMaps) btnMaps.onclick = () => {
+    const coords = (document.getElementById('d-coordenadas')?.value || '').trim();
+    const dir    = (document.getElementById('d-direccion')?.value || '').trim();
+    let url;
+    if (coords) {
+      // Coordenadas tienen prioridad (más preciso)
+      url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coords)}`;
+    } else if (dir) {
+      url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dir)}`;
+    } else {
+      toast('Captura una dirección o coordenadas primero', 'err');
+      return;
+    }
+    window.open(url, '_blank');
+  };
 
   cargarBitacoras(id);
   renderEquipos('panel');

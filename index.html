@@ -1392,6 +1392,7 @@ function bindUI() {
     if (!btn) return;
     if (btn.dataset.action === 'save')  guardarDrawer();
     if (btn.dataset.action === 'close') closeDrawer();
+    if (btn.dataset.action === 'delete') eliminarProyecto();
   });
 
   document.querySelectorAll('.tabla th[data-sort]').forEach(th => {
@@ -2251,8 +2252,10 @@ async function openDrawer(id) {
   `;
 
   if (p.bloqueado) {
+    const puedeEliminar = (currentUser === 'Daniel' || currentUser === 'Admin');
     $('#drawer-footer').innerHTML = `
       <span style="color:var(--warn); font-size:13px; margin-right:auto">🔒 Proyecto bloqueado</span>
+      ${puedeEliminar ? `<button class="btn btn-danger btn-sm" data-action="delete">🗑 Eliminar proyecto</button>` : ''}
       <button class="btn btn-ghost btn-sm" data-action="close">Cerrar</button>
     `;
   } else {
@@ -2573,6 +2576,45 @@ function closeDrawer() {
   $('#drawer').classList.remove('open');
   $('#drawer-backdrop').classList.remove('open');
   currentDrawerId = null;
+}
+
+async function eliminarProyecto() {
+  const p = proyectos.find(x => x.id === currentDrawerId);
+  if (!p) return;
+
+  // Solo Daniel/Admin, y solo si el proyecto está bloqueado (defensa extra además del botón oculto)
+  if (!(currentUser === 'Daniel' || currentUser === 'Admin')) {
+    toast('No tienes permiso para eliminar proyectos', 'err');
+    return;
+  }
+  if (!p.bloqueado) {
+    toast('Solo se pueden eliminar proyectos bloqueados', 'err');
+    return;
+  }
+
+  const nombre = p.cliente_nombre || '(sin nombre)';
+  const escrito = prompt(
+    `Esta acción borrará PERMANENTEMENTE el proyecto de "${nombre}" (folio #${p.folio_produccion || '—'}), incluyendo sus paneles, inversores y bitácoras.\n\nEsto NO se puede deshacer.\n\nEscribe el nombre exacto del cliente para confirmar:\n"${nombre}"`
+  );
+  if (escrito === null) return; // canceló
+  if (escrito.trim() !== nombre.trim()) {
+    toast('El nombre no coincide. No se eliminó nada.', 'err');
+    return;
+  }
+
+  // Borrar dependencias primero (comentarios), luego el proyecto
+  await supa.from('proyecto_comentarios_cfe').delete().eq('proyecto_id', p.id);
+  await supa.from('proyecto_comentarios_general').delete().eq('proyecto_id', p.id);
+  const { error } = await supa.from('proyectos').delete().eq('id', p.id);
+
+  if (error) {
+    toast('Error al eliminar: ' + error.message, 'err');
+    return;
+  }
+
+  toast('Proyecto eliminado permanentemente', 'ok');
+  closeDrawer();
+  await loadProyectos();
 }
 
 function abrirConfig() {

@@ -1187,10 +1187,7 @@ table.tabla { width: 100%; border-collapse: collapse; }
             <th data-sort="estado_instalacion">Estado</th>
             <th data-sort="cuadrilla">Cuadrilla</th>
             <th data-sort="kw_sistema">kW</th>
-            <th data-sort="fecha_programada_instalacion">Programada</th>
-            <th data-sort="fecha_inicio_instalacion">Inicio</th>
-            <th data-sort="fecha_terminacion">Terminación</th>
-            <th data-sort="asesor_original">Asesor</th>
+            <th data-sort="fecha_programada_instalacion">Fechas</th>
             <th data-sort="actualizado_en">Actualizado</th>
           </tr>
         </thead>
@@ -2025,7 +2022,7 @@ function actualizarHeadersSort() {
 function renderTablaInstalacion(lista) {
   const body = $('#tabla-body-inst');
   if (lista.length === 0) {
-    body.innerHTML = `<tr><td colspan="11"><div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div></td></tr>`;
+    body.innerHTML = `<tr><td colspan="8"><div class="empty"><h3>Sin proyectos</h3><p>No hay proyectos que coincidan con los filtros.</p></div></td></tr>`;
     return;
   }
   body.innerHTML = lista.map(p => {
@@ -2033,9 +2030,22 @@ function renderTablaInstalacion(lista) {
     const cuadrillaCell = cuadrilla
       ? `<td data-label="Cuadrilla" class="mono" style="font-size:12px">${escapeHtml(cuadrilla)}</td>`
       : `<td data-label="Cuadrilla" class="cell-warn mono" style="font-size:12px">Sin asignar</td>`;
-    const fechaCell = p.fecha_programada_instalacion
-      ? `<td data-label="Programada" class="mono">${fmtFecha(p.fecha_programada_instalacion)}</td>`
-      : `<td data-label="Programada" class="cell-warn mono">Sin fecha</td>`;
+
+    // Columna de fechas inteligente: cambia según el estado del proyecto
+    let fechaCell;
+    const estado = p.estado_instalacion;
+    if (estado === 'Instalada' && p.fecha_inicio_instalacion && p.fecha_terminacion) {
+      const dias = Math.round((parseFecha(p.fecha_terminacion) - parseFecha(p.fecha_inicio_instalacion)) / 86400000);
+      fechaCell = `<td data-label="Fechas" class="mono" style="font-size:12px">Duró ${dias} día${dias===1?'':'s'} (${fmtFecha(p.fecha_inicio_instalacion)} → ${fmtFecha(p.fecha_terminacion)})</td>`;
+    } else if (estado === 'En instalación' && p.fecha_inicio_instalacion) {
+      const dias = diasDesde(p.fecha_inicio_instalacion);
+      fechaCell = `<td data-label="Fechas" class="mono" style="font-size:12px">Inicio ${fmtFecha(p.fecha_inicio_instalacion)} · lleva ${dias} día${dias===1?'':'s'}</td>`;
+    } else if (p.fecha_programada_instalacion) {
+      fechaCell = `<td data-label="Fechas" class="mono" style="font-size:12px">Programada ${fmtFecha(p.fecha_programada_instalacion)}</td>`;
+    } else {
+      fechaCell = `<td data-label="Fechas" class="cell-warn mono" style="font-size:12px">Sin fecha</td>`;
+    }
+
     const urg = calcularUrgenciaInst(p);
     return `<tr class="${p.bloqueado ? 'bloqueado' : ''} urg-${urg}-row" data-id="${p.id}">
       <td class="urg-cell">${urgIcono(urg)}</td>
@@ -2045,9 +2055,6 @@ function renderTablaInstalacion(lista) {
       ${cuadrillaCell}
       <td data-label="kW" class="mono">${p.kw_sistema ? p.kw_sistema + ' kW' : '—'}</td>
       ${fechaCell}
-      <td data-label="Inicio" class="mono">${fmtFecha(p.fecha_inicio_instalacion)}</td>
-      <td data-label="Terminación" class="mono">${fmtFecha(p.fecha_terminacion)}</td>
-      <td data-label="Asesor">${escapeHtml(p.asesor_original || '—')}</td>
       <td data-label="Actualizado" class="mono" style="font-size:11px; color:var(--ink-mute)">${fmtRelativo(p.actualizado_en)}</td>
     </tr>`;
   }).join('');

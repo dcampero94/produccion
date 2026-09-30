@@ -1082,7 +1082,7 @@ table.tabla { width: 100%; border-collapse: collapse; }
   <div class="tabs-bar">
     <button class="tab active" data-tab="pendientes">Pendientes</button>
     <button class="tab" data-tab="instalacion" id="tab-btn-instalacion">Instalación</button>
-    <button class="tab" data-tab="tramite">Trámite CFE</button>
+    <button class="tab" data-tab="tramite" id="tab-btn-tramite">Trámite CFE</button>
   </div>
 
   <main class="cola-main" data-tab-content="pendientes">
@@ -1116,7 +1116,7 @@ table.tabla { width: 100%; border-collapse: collapse; }
       </div>
     </div>
 
-    <div class="cola-seccion">
+    <div class="cola-seccion" id="seccion-pend-tramite">
       <div class="cola-seccion-titulo">Trámite CFE</div>
       <div class="cola-wrap">
         <div class="cola-col" data-zona="etapa">
@@ -1265,7 +1265,8 @@ const USERS = {
   sgerman: { pass: 'sgerman123', display: 'SGerman' },
   admin:   { pass: 'Tecnoden10!', display: 'Admin'  },
   victor:  { pass: 'victor123',   display: 'Victor' },
-  adrian:  { pass: 'adrian123',   display: 'Adrian', rol: 'tramite' }
+  adrian:  { pass: 'adrian123',   display: 'Adrian', rol: 'tramite' },
+  juan:    { pass: 'juan123',     display: 'Juan', rol: 'instalacion' }
 };
 
 const CUADRILLAS = ['Cuadrilla Tecnoden', 'Cuadrilla Alex', 'Cuadrilla Javier', 'Otro'];
@@ -1330,7 +1331,7 @@ function startApp() {
   loadProyectos();
 }
 
-// Oculta partes de la UI según el rol del usuario (ej. Adrian: solo Trámite CFE)
+// Oculta partes de la UI según el rol del usuario (ej. Adrian: solo Trámite CFE; Juan: solo Instalación)
 function aplicarRestriccionesRol() {
   if (currentRol === 'tramite') {
     const tabInst = document.getElementById('tab-btn-instalacion');
@@ -1339,6 +1340,11 @@ function aplicarRestriccionesRol() {
     if (seccInst) seccInst.style.display = 'none';
     const metricas = document.getElementById('cola-metricas');
     if (metricas) metricas.style.display = 'none';
+  } else if (currentRol === 'instalacion') {
+    const tabTra = document.getElementById('tab-btn-tramite');
+    if (tabTra) tabTra.style.display = 'none';
+    const seccTra = document.getElementById('seccion-pend-tramite');
+    if (seccTra) seccTra.style.display = 'none';
   }
 }
 
@@ -1512,6 +1518,7 @@ async function agregarAlCatalogo(tipo, marca, potencia) {
 
 function switchTab(tab) {
   if (currentRol === 'tramite' && tab === 'instalacion') tab = 'tramite';
+  if (currentRol === 'instalacion' && tab === 'tramite') tab = 'instalacion';
   currentTab = tab;
   document.querySelectorAll('.tab').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === tab);
@@ -2166,8 +2173,13 @@ async function openDrawer(id) {
     `<option ${p.estado_tramite === e ? 'selected' : ''}>${e}</option>`
   ).join('');
 
-  const ro = p.bloqueado ? 'disabled' : '';
-  const verInstalacion = currentRol !== 'tramite'; // Adrian (rol tramite) no ve nada de instalación
+  const restringido = (currentRol === 'tramite' || currentRol === 'instalacion');
+  const ro = (p.bloqueado || restringido) ? 'disabled' : ''; // solo lectura para roles restringidos, salvo el estado permitido
+  const roEstado = p.bloqueado ? 'disabled' : ''; // el selector de estado permitido SIEMPRE es editable (si no está bloqueado)
+  const roNotas  = (p.bloqueado || currentRol === 'tramite') ? 'disabled' : ''; // Notas técnicas: Juan sí puede, Adrian no
+  const verInstalacion = currentRol !== 'tramite';   // Adrian no ve Instalación ni Datos técnicos
+  const verTramite      = currentRol !== 'instalacion'; // Juan no ve Trámite CFE
+  const verPausa         = !restringido;              // Adrian y Juan no ven el botón de pausa
 
   $('#drawer-body').innerHTML = `
     ${p.bloqueado ? `<div class="banner-bloqueado">🔒 Proyecto bloqueado · la cotización ya no está marcada como Vendida en el CRM principal.</div>` : ''}
@@ -2196,7 +2208,7 @@ async function openDrawer(id) {
       <h3>Instalación</h3>
       <div class="grid-3">
         <div class="field"><label>Estado de instalación</label>
-          <select data-field="estado_instalacion" id="d-estado-inst" ${ro}>${instSelect}</select>
+          <select data-field="estado_instalacion" id="d-estado-inst" ${roEstado}>${instSelect}</select>
         </div>
         <div class="field"><label>Cuadrilla</label>
           <select data-field="cuadrilla" ${ro} id="d-cuadrilla"><option value="">—</option>${cuadrillaSelect}</select>
@@ -2213,10 +2225,11 @@ async function openDrawer(id) {
     </div>
     ` : ''}
 
+    ${verInstalacion ? `
     <div class="section">
       <div class="equipos-head">
         <h3 style="border:none;margin:0;padding:0">Datos técnicos · Paneles</h3>
-        ${p.bloqueado ? '' : `<button class="btn btn-ghost btn-sm" id="add-panel">+ Agregar tipo</button>`}
+        ${(p.bloqueado || restringido) ? '' : `<button class="btn btn-ghost btn-sm" id="add-panel">+ Agregar tipo</button>`}
       </div>
       <div id="lista-paneles"></div>
       <div class="kw-total" id="kw-total-paneles">kW total del arreglo: — kW</div>
@@ -2225,28 +2238,30 @@ async function openDrawer(id) {
     <div class="section">
       <div class="equipos-head">
         <h3 style="border:none;margin:0;padding:0">Datos técnicos · Inversores</h3>
-        ${p.bloqueado ? '' : `<button class="btn btn-ghost btn-sm" id="add-inversor">+ Agregar tipo</button>`}
+        ${(p.bloqueado || restringido) ? '' : `<button class="btn btn-ghost btn-sm" id="add-inversor">+ Agregar tipo</button>`}
       </div>
       <div id="lista-inversores"></div>
       <div class="kw-total" id="kw-total-inversores">Capacidad total de inversores: — kW</div>
     </div>
+    ` : ''}
 
     <div class="section">
       <h3>Notas técnicas</h3>
-      <div class="field"><textarea data-field="notas_tecnicas" ${ro}>${escapeHtml(p.notas_tecnicas || '')}</textarea></div>
+      <div class="field"><textarea data-field="notas_tecnicas" ${roNotas}>${escapeHtml(p.notas_tecnicas || '')}</textarea></div>
     </div>
 
+    ${verTramite ? `
     <div class="section">
       <h3>Trámite CFE</h3>
       <div class="grid-3">
         <div class="field"><label>Estado del trámite</label>
-          <select data-field="estado_tramite" id="d-estado-tra" ${ro}>${traSelect}</select>
+          <select data-field="estado_tramite" id="d-estado-tra" ${roEstado}>${traSelect}</select>
         </div>
         <div class="field"><label>Inicio del trámite</label>
           <input type="date" value="${p.fecha_inicio_tramite || ''}" data-field="fecha_inicio_tramite" id="d-fecha-tramite" ${ro}>
         </div>
         <div class="field"><label>Número SIRESI</label>
-          <input value="${escapeAttr(p.siresi)}" data-field="siresi" ${ro}>
+          <input value="${escapeAttr(p.siresi)}" data-field="siresi" ${roEstado}>
         </div>
       </div>
       <div style="margin-top:10px">
@@ -2259,6 +2274,7 @@ async function openDrawer(id) {
         `}
       </div>
     </div>
+    ` : ''}
 
     <div class="section">
       <h3>Bitácora general</h3>
@@ -2271,7 +2287,7 @@ async function openDrawer(id) {
       `}
     </div>
 
-    ${verInstalacion ? `
+    ${verPausa ? `
     <div class="section">
       <label class="pausa-check">
         <input type="checkbox" data-field="en_pausa" id="d-en-pausa" ${p.en_pausa ? 'checked' : ''} ${ro}>
@@ -2413,7 +2429,7 @@ function renderEquipos(tipo) {
   if (!cont) return;
 
   const p = proyectos.find(x => x.id === currentDrawerId);
-  const bloqueado = p && p.bloqueado;
+  const bloqueado = (p && p.bloqueado) || (currentRol === 'tramite' || currentRol === 'instalacion');
   const ro = bloqueado ? 'disabled' : '';
   const unidadPot = esPanel ? 'W' : 'kW';
   const labelCant = esPanel ? '# paneles' : '# inversores';

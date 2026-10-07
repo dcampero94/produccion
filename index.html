@@ -2535,10 +2535,12 @@ async function cargarBitacoras(id) {
     loadComentarios(id, 'proyecto_comentarios_cfe'),
     loadComentarios(id, 'proyecto_comentarios_general')
   ]);
-  $('#cfe-list').innerHTML = cfe.length
+  const cfeEl = document.getElementById('cfe-list');
+  if (cfeEl) cfeEl.innerHTML = cfe.length
     ? cfe.map(c => renderComentario(c)).join('')
     : '<div class="empty" style="padding:20px">Sin actualizaciones del SIRESI.</div>';
-  $('#gen-list').innerHTML = gen.length
+  const genEl = document.getElementById('gen-list');
+  if (genEl) genEl.innerHTML = gen.length
     ? gen.map(c => renderComentario(c)).join('')
     : '<div class="empty" style="padding:20px">Sin notas en la bitácora.</div>';
 }
@@ -2555,7 +2557,8 @@ function renderComentario(c) {
 
 async function agregarComentario(tipo) {
   const tabla = tipo === 'cfe' ? 'proyecto_comentarios_cfe' : 'proyecto_comentarios_general';
-  const input = $('#' + tipo + '-new');
+  const input = document.getElementById(tipo + '-new');
+  if (!input) return;
   const texto = input.value.trim();
   if (!texto) return;
   const ok = await addComentario(tabla, currentDrawerId, texto);

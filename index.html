@@ -2245,10 +2245,12 @@ async function openDrawer(id) {
     </div>
     ` : ''}
 
+    ${currentRol !== 'tramite' ? `
     <div class="section">
       <h3>Notas técnicas</h3>
       <div class="field"><textarea data-field="notas_tecnicas" ${roNotas}>${escapeHtml(p.notas_tecnicas || '')}</textarea></div>
     </div>
+    ` : ''}
 
     ${verTramite ? `
     <div class="section">
@@ -2258,7 +2260,7 @@ async function openDrawer(id) {
           <select data-field="estado_tramite" id="d-estado-tra" ${roEstado}>${traSelect}</select>
         </div>
         <div class="field"><label>Inicio del trámite</label>
-          <input type="date" value="${p.fecha_inicio_tramite || ''}" data-field="fecha_inicio_tramite" id="d-fecha-tramite" ${ro}>
+          <input type="date" value="${p.fecha_inicio_tramite || ''}" data-field="fecha_inicio_tramite" id="d-fecha-tramite" ${roEstado}>
         </div>
         <div class="field"><label>Número SIRESI</label>
           <input value="${escapeAttr(p.siresi)}" data-field="siresi" ${roEstado}>

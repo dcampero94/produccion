@@ -1696,7 +1696,7 @@ function renderCola() {
   const iPend = activos.filter(p => p.estado_instalacion === 'Pendiente' || p.estado_instalacion === 'Programada');
   // En proceso: En instalación
   const iProc = activos.filter(p => p.estado_instalacion === 'En instalación');
-  // Terminadas esta semana (lunes a sábado de la semana actual)
+  // Terminadas en los últimos 7 días
   const iTerm = activos.filter(p => {
     if (p.estado_instalacion !== 'Instalada') return false;
     if (!p.fecha_terminacion) return false;
@@ -1721,7 +1721,7 @@ function renderCola() {
   const tPing = activosTra.filter(p => p.estado_tramite === 'Sin iniciar');
   // En trámite: En trámite
   const tProc = activosTra.filter(p => p.estado_tramite === 'En trámite');
-  // Interconectados: Aprobado esta semana (lunes a sábado, por fecha de actualización)
+  // Interconectados: Aprobado en los últimos 7 días (por fecha de actualización)
   const tInt = activosTra.filter(p => {
     if (p.estado_tramite !== 'Aprobado') return false;
     return esDeEstaSemana(p.actualizado_en);
@@ -1753,20 +1753,15 @@ function fechaRef(p) {
   return new Date(p.creado_en);
 }
 
-// ¿La fecha cae en la semana actual (lunes a sábado)?
+// ¿La fecha cae en los últimos 7 días (hoy y los 6 días anteriores)?
 function esDeEstaSemana(fecha) {
   const d = parseFecha(fecha);
   const hoy = new Date(); hoy.setHours(0,0,0,0);
-  // Lunes de esta semana
-  const diaSemana = hoy.getDay(); // 0=domingo, 1=lunes, ... 6=sábado
-  const diasDesdeLunes = (diaSemana === 0) ? 6 : (diaSemana - 1);
-  const lunes = new Date(hoy);
-  lunes.setDate(hoy.getDate() - diasDesdeLunes);
-  // Sábado de esta semana
-  const sabado = new Date(lunes);
-  sabado.setDate(lunes.getDate() + 5);
-  sabado.setHours(23,59,59,999);
-  return d >= lunes && d <= sabado;
+  const desde = new Date(hoy);
+  desde.setDate(hoy.getDate() - 6);
+  const hasta = new Date(hoy);
+  hasta.setHours(23,59,59,999);
+  return d >= desde && d <= hasta;
 }
 
 // Orden por urgencia: rojo primero, luego amarillo, verde, gris
@@ -1799,11 +1794,11 @@ function pintarColumnaCola(bodyId, countId, lista, zona, tipo) {
       // Columnas por etapa
       msg = bodyId === 'cola-i-pend' ? 'Nada pendiente por atender 👍'
           : bodyId === 'cola-i-proc' ? 'Ninguna instalación en proceso'
-          : 'Sin instalaciones terminadas esta semana';
+          : 'Sin instalaciones terminadas en los últimos 7 días';
     } else {
       msg = bodyId === 'cola-t-ping' ? 'Nada pendiente por ingresar 👍'
           : bodyId === 'cola-t-proc' ? 'Ningún trámite en curso'
-          : 'Sin interconexiones esta semana';
+          : 'Sin interconexiones en los últimos 7 días';
     }
     body.innerHTML = `<div class="cola-empty">${msg}</div>`;
     return;
